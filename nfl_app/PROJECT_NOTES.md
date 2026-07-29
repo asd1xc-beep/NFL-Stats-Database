@@ -8,7 +8,7 @@ The user works as a font coordinator with a GFX operator. The goal is to reduce 
 
 ## Current Project Folder
 
-NFL_STATS_DATABASE
+NFL_STATS_DATABASE\nfl_app
 
 ## Python Environment
 
