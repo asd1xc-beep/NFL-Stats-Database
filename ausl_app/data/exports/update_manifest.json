@@ -1,0 +1,21 @@
+{
+  "updated_at": "2026-07-09T02:26:59.481868+00:00",
+  "seasons": {
+    "2025": 270,
+    "2026": 369
+  },
+  "current_roster_players": 118,
+  "source": "https://theausl.com",
+  "enrichment_sources": [
+    "Official AUSL JSON/API",
+    "2026 AUSL Media Guide",
+    "Official AUSL Split Stats",
+    "Official AUSL Standings",
+    "Official AUSL Schedule",
+    "AUSL News",
+    "MLB AUSL News",
+    "AUSL Draft Results",
+    "AUSL Golden Ticket Tracker",
+    "College/Awards Sources"
+  ]
+}
