@@ -240,6 +240,12 @@ class ESPNLiveProvider:
     def _parse_date(value) -> datetime | None:
         if not value:
             return None
+        try:
+            parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        except ValueError:
+            return None
+        # discover_game() subtracts this from an aware "now", so never return a naive value.
+        return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
 
 
 class GSISXMLProvider:
@@ -488,7 +494,3 @@ class GSISReplayProvider:
                     raise ValueError("Unsafe path found in GSIS sample archive")
             archive.extractall(root)
         self.files = self.parser.snapshot_files(self.sample_folder)
-        try:
-            return datetime.fromisoformat(value.replace("Z", "+00:00"))
-        except ValueError:
-            return None
