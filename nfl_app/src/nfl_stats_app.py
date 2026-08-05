@@ -19,6 +19,10 @@ from build_career_database import (
     CURRENT_SEASON, PRESEASON_SEASON, build_active_roster,
     build_preseason_totals, build_totals, export_database, load_stats,
 )
+from call_sheet import (
+    duplicate_keys, duplicate_values, load_call_sheet, normalize_call_up,
+    save_call_sheet,
+)
 from lookup_player import (
     CAREER_FILE, DEFENSIVE_POSITIONS, OFFENSIVE_POSITIONS, PRESEASON_FILE,
     ROSTER_FILE, SEASON_FILE, SPECIAL_TEAMS_POSITIONS, STAT_GROUPS,
@@ -38,6 +42,10 @@ ROSTER_STATUS_LABELS = {
     "SUS": "Suspended", "EXE": "Commissioner Exempt",
     "E14": "International Player Exemption",
 }
+
+CALL_SHEET_UNITS = ("All", "Offense", "Defense", "Special Teams")
+JERSEY_NUMBERS_PER_ROW = 10
+JERSEY_GRID_ROWS = 10
 
 COUNTER_FIELDS = [
     ("third_down_made", "3rd Down Made"),
@@ -107,6 +115,26 @@ class NFLStatsApp(tk.Tk):
             for side in ("home", "away")
         }
 
+        # Call sheet: {entry_key: {"call_up", "name", "jersey", "position", "team"}}.
+        # Kept out of the stat databases, which "Update All Data" fully overwrites.
+        self.call_sheet_entries: dict[str, dict] = {}
+        self.call_sheet_matchup: tuple[str, str] | None = None
+        self.call_sheet_rows: dict[str, list[dict]] = {"home": [], "away": []}
+        self.call_sheet_unit = {
+            side: tk.StringVar(value="All") for side in ("home", "away")
+        }
+        self.call_sheet_counter = {
+            side: tk.StringVar(value="0/0 assigned") for side in ("home", "away")
+        }
+        self.call_sheet_team_label = {
+            side: tk.StringVar(value=side.title()) for side in ("home", "away")
+        }
+        self.call_sheet_search_text = tk.StringVar()
+        self.call_sheet_warning = tk.StringVar(value="")
+        self._callup_editor: ttk.Entry | None = None
+        self._callup_highlight_job: dict[str, str] = {}
+        self.jersey_cells: dict[str, dict[int, dict]] = {"home": {}, "away": {}}
+
         self._set_style()
         self._build_window()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -125,6 +153,8 @@ class NFLStatsApp(tk.Tk):
         style.configure("Green.TLabel", foreground="#176b2c", font=("Segoe UI", 9, "bold"))
         style.configure("Treeview", rowheight=26, font=("Segoe UI", 10))
         style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"))
+        style.configure("Warning.TLabel", foreground="#b00020", font=("Segoe UI", 10, "bold"))
+        style.configure("Counter.TLabel", font=("Segoe UI", 10, "bold"))
 
     def _build_window(self) -> None:
         header = ttk.Frame(self, padding=(16, 12, 16, 8))
@@ -139,18 +169,25 @@ class NFLStatsApp(tk.Tk):
         self.workspace_tabs = ttk.Notebook(self)
         self.workspace_tabs.pack(fill="both", expand=True, padx=16)
         self.player_page = ttk.Frame(self.workspace_tabs)
+        self.call_sheet_page = ttk.Frame(self.workspace_tabs, padding=10)
+        self.jersey_page = ttk.Frame(self.workspace_tabs, padding=10)
         self.live_page = ttk.Frame(self.workspace_tabs, padding=14)
         self.situational_page = ttk.Frame(self.workspace_tabs, padding=14)
         self.suggestions_page = ttk.Frame(self.workspace_tabs, padding=14)
         self.workspace_tabs.add(self.player_page, text="Player Lookup")
+        self.workspace_tabs.add(self.call_sheet_page, text="Call Sheet")
+        self.workspace_tabs.add(self.jersey_page, text="Jersey Grid")
         self.workspace_tabs.add(self.live_page, text="Live Game")
         self.workspace_tabs.add(self.situational_page, text="Situational Stats")
         self.workspace_tabs.add(self.suggestions_page, text="Suggested Next Graphics")
 
         self._build_player_lookup()
+        self._build_call_sheet_tab()
+        self._build_jersey_grid_tab()
         self._build_live_tab()
         self._build_situational_tab()
         self._build_suggestions_tab()
+        self.workspace_tabs.bind("<<NotebookTabChanged>>", self._workspace_tab_changed)
 
         status = ttk.Frame(self, padding=(16, 8, 16, 10))
         status.pack(fill="x")
@@ -248,6 +285,496 @@ class NFLStatsApp(tk.Tk):
             ("Copy Announcer Note", "announcer"), ("Copy Jersey ID", "jersey"),
         ):
             ttk.Button(buttons, text=label, command=lambda kind=kind: self.copy_player_gfx(kind)).pack(side="left", padx=(0, 6))
+
+    # ------------------------------------------------------------------ #
+    # Call Sheet                                                          #
+    # ------------------------------------------------------------------ #
+
+    def _build_call_sheet_tab(self) -> None:
+        top = ttk.Frame(self.call_sheet_page)
+        top.pack(fill="x", pady=(0, 8))
+        ttk.Label(top, text="Find #:").pack(side="left")
+        search = ttk.Entry(top, textvariable=self.call_sheet_search_text, width=18, font=("Segoe UI", 11))
+        search.pack(side="left", padx=(6, 6))
+        search.bind("<Return>", lambda _event: self.call_sheet_search())
+        ttk.Button(top, text="Jump", command=self.call_sheet_search).pack(side="left")
+        ttk.Label(
+            top, text="searches both teams and every unit, whatever the filters are set to",
+            style="Status.TLabel",
+        ).pack(side="left", padx=(10, 0))
+        ttk.Button(top, text="Copy Both", command=lambda: self.copy_call_sheet("both")).pack(side="right")
+        ttk.Button(top, text="Copy Away", command=lambda: self.copy_call_sheet("away")).pack(side="right", padx=6)
+        ttk.Button(top, text="Copy Home", command=lambda: self.copy_call_sheet("home")).pack(side="right")
+
+        ttk.Label(
+            self.call_sheet_page, textvariable=self.call_sheet_warning, style="Warning.TLabel",
+        ).pack(fill="x", pady=(0, 6))
+
+        tables = ttk.Frame(self.call_sheet_page)
+        tables.pack(fill="both", expand=True)
+        tables.columnconfigure(0, weight=1, uniform="callsheet")
+        tables.columnconfigure(1, weight=1, uniform="callsheet")
+        tables.rowconfigure(0, weight=1)
+        self.call_sheet_trees = {
+            "home": self._build_call_sheet_table(tables, "home", 0),
+            "away": self._build_call_sheet_table(tables, "away", 1),
+        }
+
+    def _build_call_sheet_table(self, parent: ttk.Frame, side: str, column: int) -> ttk.Treeview:
+        frame = ttk.Labelframe(parent, padding=6)
+        frame.grid(row=0, column=column, sticky="nsew", padx=(0, 6) if column == 0 else (6, 0))
+        frame.configure(labelwidget=ttk.Label(parent, textvariable=self.call_sheet_team_label[side],
+                                              style="CardBold.TLabel"))
+
+        controls = ttk.Frame(frame)
+        controls.pack(fill="x", pady=(0, 5))
+        ttk.Label(controls, text="Unit:").pack(side="left")
+        unit = ttk.Combobox(
+            controls, textvariable=self.call_sheet_unit[side], values=CALL_SHEET_UNITS,
+            state="readonly", width=14,
+        )
+        unit.pack(side="left", padx=(5, 0))
+        unit.bind("<<ComboboxSelected>>", lambda _event: self._refresh_call_sheet())
+        ttk.Label(
+            controls, textvariable=self.call_sheet_counter[side], style="Counter.TLabel",
+        ).pack(side="right")
+
+        holder = ttk.Frame(frame)
+        holder.pack(fill="both", expand=True)
+        tree = ttk.Treeview(holder, columns=("jersey", "pos", "name", "callup"), show="headings")
+        tree.heading("jersey", text="#")
+        tree.heading("pos", text="Pos")
+        tree.heading("name", text="Name")
+        tree.heading("callup", text="Call-Up #")
+        tree.column("jersey", width=44, anchor="center", stretch=False)
+        tree.column("pos", width=50, anchor="center", stretch=False)
+        tree.column("name", width=180, anchor="w")
+        tree.column("callup", width=90, anchor="center", stretch=False)
+        tree.tag_configure("dupe", background="#ffd6d6", foreground="#8a0000")
+        tree.tag_configure("offroster", background="#eeeeee", foreground="#777777")
+        tree.tag_configure("hit", background="#ffe89a")
+        tree.pack(side="left", fill="both", expand=True)
+        scroll = ttk.Scrollbar(holder, orient="vertical", command=tree.yview)
+        tree.configure(yscrollcommand=scroll.set)
+        scroll.pack(side="right", fill="y")
+
+        tree.bind("<Double-1>", lambda event, side=side: self._begin_callup_edit(event, side))
+        tree.bind("<Return>", lambda event, side=side: self._edit_selected_callup(side))
+        return tree
+
+    @staticmethod
+    def _call_sheet_keys(row) -> tuple[str, str]:
+        """Return (primary, legacy) keys for a roster row.
+
+        player_id is the GSIS id used to join roster/career/season data everywhere
+        else, so it is the right key: a mid-week roster refresh must not disturb
+        numbers already typed against players who are still on the roster. A small
+        number of camp-roster rookies have no GSIS id yet, so those fall back to a
+        name/team composite; if an id is assigned later the value migrates on load.
+        """
+        team = normalize_team_code(safe_get(row, "team"))
+        name = str(safe_get(row, "player_display_name", "")).strip().casefold()
+        legacy = f"name:{team}:{name}"
+        player_id = str(safe_get(row, "player_id", "")).strip()
+        return (player_id or legacy), legacy
+
+    def _game_sides(self) -> dict[str, str]:
+        """Home/away codes keyed by side.
+
+        get_game_team_codes() de-duplicates, which loses the side distinction when
+        the same team is picked twice, so read the two selections directly here.
+        """
+        return {
+            "home": TEAM_LABEL_TO_CODE.get(self.home_team_selection.get(), ""),
+            "away": TEAM_LABEL_TO_CODE.get(self.away_team_selection.get(), ""),
+        }
+
+    def _load_call_sheet_for_matchup(self, home: str, away: str) -> None:
+        self.call_sheet_entries = load_call_sheet(home, away)
+        self.call_sheet_matchup = (home, away)
+
+    def _call_sheet_side_rows(self, side: str, team: str) -> list[dict]:
+        """Every row for one side: current roster plus assigned players who left it."""
+        rows: list[dict] = []
+        seen: set[str] = set()
+        if not self.roster.empty and team:
+            team_rows = self.roster[self.roster["team"] == team]
+            for _, player in team_rows.iterrows():
+                key, legacy = self._call_sheet_keys(player)
+                entry = self.call_sheet_entries.get(key) or self.call_sheet_entries.get(legacy) or {}
+                seen.add(key)
+                rows.append({
+                    "key": key,
+                    "jersey": self._format_jersey(safe_get(player, "jersey_number")),
+                    "position": str(safe_get(player, "position", "")).upper(),
+                    "name": str(safe_get(player, "player_display_name", "")),
+                    "team": team,
+                    "call_up": str(entry.get("call_up", "")).strip(),
+                    "on_roster": True,
+                    "roster_row": player,
+                })
+        # Keep assigned players who dropped off the roster rather than deleting their
+        # work — roster moves get reversed, and re-typing numbers is exactly the
+        # friction this tab exists to remove.
+        for key, entry in self.call_sheet_entries.items():
+            if key in seen or normalize_team_code(entry.get("team")) != team:
+                continue
+            rows.append({
+                "key": key,
+                "jersey": str(entry.get("jersey", "")),
+                "position": str(entry.get("position", "")).upper(),
+                "name": str(entry.get("name", "")),
+                "team": team,
+                "call_up": str(entry.get("call_up", "")).strip(),
+                "on_roster": False,
+                "roster_row": None,
+            })
+        rows.sort(key=lambda row: (
+            int(row["jersey"]) if row["jersey"].isdigit() else 1000, row["name"]
+        ))
+        return rows
+
+    @staticmethod
+    def _matches_unit(position: str, unit: str) -> bool:
+        if unit == "Offense":
+            return position in OFFENSIVE_POSITIONS
+        if unit == "Defense":
+            return position in DEFENSIVE_POSITIONS
+        if unit == "Special Teams":
+            return position in SPECIAL_TEAMS_POSITIONS
+        return True
+
+    def _refresh_call_sheet(self, force_reload: bool = False) -> None:
+        if not hasattr(self, "call_sheet_trees"):
+            return
+        sides = self._game_sides()
+        home, away = sides["home"], sides["away"]
+        if not home or not away:
+            return
+        if force_reload or self.call_sheet_matchup != (home, away):
+            self._cancel_callup_edit()
+            self._load_call_sheet_for_matchup(home, away)
+
+        dupes = duplicate_keys(self.call_sheet_entries)
+        for side in ("home", "away"):
+            team = sides[side]
+            self.call_sheet_team_label[side].set(
+                f"{side.title()} — {TEAM_NAMES.get(team, team)}"
+            )
+            self.call_sheet_rows[side] = self._call_sheet_side_rows(side, team)
+            unit = self.call_sheet_unit[side].get()
+            visible = [
+                row for row in self.call_sheet_rows[side]
+                if self._matches_unit(row["position"], unit)
+            ]
+            tree = self.call_sheet_trees[side]
+            tree.delete(*tree.get_children())
+            for row in visible:
+                tags = []
+                if row["key"] in dupes:
+                    tags.append("dupe")
+                elif not row["on_roster"]:
+                    tags.append("offroster")
+                name = row["name"] if row["on_roster"] else f"{row['name']}  (not on current roster)"
+                tree.insert(
+                    "", "end", iid=row["key"],
+                    values=(row["jersey"] or "—", row["position"] or "—", name, row["call_up"]),
+                    tags=tags,
+                )
+            assigned = sum(1 for row in visible if row["call_up"])
+            self.call_sheet_counter[side].set(f"{assigned}/{len(visible)} assigned")
+
+        values = duplicate_values(self.call_sheet_entries)
+        self.call_sheet_warning.set(
+            "⚠  DUPLICATE CALL-UP NUMBER"
+            + ("S" if len(values) > 1 else "")
+            + f" — {', '.join(values)}  (every affected row is highlighted red)"
+            if values else ""
+        )
+
+    # -- inline Call-Up # editing ---------------------------------------- #
+
+    def _cancel_callup_edit(self) -> None:
+        if self._callup_editor is not None:
+            editor, self._callup_editor = self._callup_editor, None
+            editor.destroy()
+
+    def _edit_selected_callup(self, side: str) -> None:
+        selection = self.call_sheet_trees[side].selection()
+        if selection:
+            self._open_callup_editor(side, selection[0])
+
+    def _begin_callup_edit(self, event, side: str) -> None:
+        tree = self.call_sheet_trees[side]
+        if tree.identify_region(event.x, event.y) != "cell":
+            return
+        if tree.identify_column(event.x) != "#4":  # only Call-Up # is editable
+            return
+        key = tree.identify_row(event.y)
+        if key:
+            self._open_callup_editor(side, key)
+
+    def _open_callup_editor(self, side: str, key: str) -> None:
+        self._cancel_callup_edit()
+        tree = self.call_sheet_trees[side]
+        tree.see(key)
+        tree.update_idletasks()
+        box = tree.bbox(key, "#4")
+        if not box:
+            return
+        x, y, width, height = box
+        editor = ttk.Entry(tree, justify="center", font=("Segoe UI", 10))
+        editor.place(x=x, y=y, width=width, height=height)
+        editor.insert(0, tree.set(key, "callup"))
+        editor.select_range(0, tk.END)
+        editor.focus_set()
+        self._callup_editor = editor
+
+        def commit(_event=None, advance: bool = False) -> None:
+            if self._callup_editor is not editor:
+                return
+            self._callup_editor = None
+            value = editor.get()
+            editor.destroy()
+            self._commit_callup(side, key, value)
+            if advance:
+                following = tree.next(key)
+                if following:
+                    self._open_callup_editor(side, following)
+
+        editor.bind("<Return>", lambda event: commit(event, advance=True))
+        editor.bind("<KP_Enter>", lambda event: commit(event, advance=True))
+        editor.bind("<FocusOut>", commit)
+        editor.bind("<Escape>", lambda _event: self._cancel_callup_edit())
+
+    def _commit_callup(self, side: str, key: str, value: str) -> None:
+        """Auto-save on every commit — no Save button to forget minutes before air."""
+        value = value.strip()
+        row = next((item for item in self.call_sheet_rows[side] if item["key"] == key), None)
+        existing = self.call_sheet_entries.get(key, {})
+        if value:
+            self.call_sheet_entries[key] = {
+                "call_up": value,
+                "name": row["name"] if row else existing.get("name", ""),
+                "jersey": row["jersey"] if row else existing.get("jersey", ""),
+                "position": row["position"] if row else existing.get("position", ""),
+                "team": row["team"] if row else existing.get("team", ""),
+            }
+        else:
+            self.call_sheet_entries.pop(key, None)
+        self._save_call_sheet()
+        self._refresh_call_sheet()
+
+    def _save_call_sheet(self) -> None:
+        if not self.call_sheet_matchup:
+            return
+        home, away = self.call_sheet_matchup
+        try:
+            save_call_sheet(home, away, self.call_sheet_entries)
+        except OSError as error:
+            self.status_text.set(f"CALL SHEET SAVE FAILED — {error}")
+            messagebox.showerror(APP_TITLE, f"Could not save the call sheet:\n\n{error}")
+            return
+        self.status_text.set(
+            f"Call sheet saved — {len(self.call_sheet_entries)} assigned "
+            f"({away} at {home})"
+        )
+
+    def call_sheet_search(self) -> None:
+        """Find a jersey number (or name) across both teams, ignoring unit filters."""
+        query = self.call_sheet_search_text.get().strip().lstrip("#").strip()
+        if not query:
+            return
+        wanted = query.lstrip("0").casefold()
+        matches: list[tuple[str, dict]] = []
+        for side in ("home", "away"):
+            for row in self.call_sheet_rows[side]:
+                jersey = row["jersey"].lstrip("0").casefold()
+                if query.isdigit():
+                    if jersey == wanted:
+                        matches.append((side, row))
+                elif wanted and wanted in row["name"].casefold():
+                    matches.append((side, row))
+        if not matches:
+            self.status_text.set(f'Call sheet: no player matching "{query}" on either team')
+            return
+        # The searched row may be hidden by that table's unit filter; the whole point
+        # of this box is an instant answer, so clear the filter that would hide it.
+        for side, row in matches:
+            if not self._matches_unit(row["position"], self.call_sheet_unit[side].get()):
+                self.call_sheet_unit[side].set("All")
+        self._refresh_call_sheet()
+        for side, row in matches:
+            self._flash_call_sheet_row(side, row["key"])
+        side, row = matches[0]
+        self.call_sheet_trees[side].focus_set()
+        found = ", ".join(f"{item['jersey'] or '?'} {item['name']} ({side.upper()})" for side, item in matches[:4])
+        self.status_text.set(f"Call sheet: {len(matches)} match(es) — {found}")
+
+    def _flash_call_sheet_row(self, side: str, key: str) -> None:
+        tree = self.call_sheet_trees[side]
+        if not tree.exists(key):
+            return
+        tree.see(key)
+        tree.selection_set(key)
+        original = tree.item(key, "tags")
+        tree.item(key, tags=("hit",))
+        job = self._callup_highlight_job.pop(f"{side}:{key}", None)
+        if job:
+            self.after_cancel(job)
+
+        def restore() -> None:
+            self._callup_highlight_job.pop(f"{side}:{key}", None)
+            if tree.exists(key):
+                tree.item(key, tags=original)
+
+        self._callup_highlight_job[f"{side}:{key}"] = self.after(2500, restore)
+
+    def call_sheet_lines(self, side: str) -> list[str]:
+        """Copy-ready block for one team; assigned rows only."""
+        team = self._game_sides()[side]
+        rows = [row for row in self.call_sheet_rows[side] if row["call_up"]]
+        lines = [f"{TEAM_NAMES.get(team, team).upper()} — GFX CALL SHEET"]
+        if not rows:
+            lines.append("  (no call-up numbers assigned yet)")
+            return lines
+        for row in rows:
+            flag = "" if row["on_roster"] else "   [NOT ON CURRENT ROSTER]"
+            lines.append(
+                f"#{row['jersey'] or '?'} — {row['name']} — {row['position'] or '?'} — {row['call_up']}{flag}"
+            )
+        lines.append(f"  {len(rows)} assigned")
+        return lines
+
+    def copy_call_sheet(self, which: str) -> None:
+        if which == "both":
+            text = "\n".join(self.call_sheet_lines("home") + [""] + self.call_sheet_lines("away"))
+            label = "both call sheets"
+        else:
+            text = "\n".join(self.call_sheet_lines(which))
+            label = f"{which} call sheet"
+        self._copy_to_clipboard(text, f"Copied {label} to clipboard")
+
+    # ------------------------------------------------------------------ #
+    # Jersey Grid                                                         #
+    # ------------------------------------------------------------------ #
+
+    def _build_jersey_grid_tab(self) -> None:
+        ttk.Label(
+            self.jersey_page,
+            text="Who is #__ — active roster numbers for the selected game. Click a filled square to open that player.",
+            style="Status.TLabel",
+        ).pack(anchor="w", pady=(0, 8))
+
+        grids = ttk.Frame(self.jersey_page)
+        grids.pack(fill="both", expand=True)
+        grids.columnconfigure(0, weight=1, uniform="jersey")
+        grids.columnconfigure(1, weight=1, uniform="jersey")
+        grids.rowconfigure(0, weight=1)
+        self.jersey_frames = {
+            "home": self._build_jersey_grid(grids, "home", 0),
+            "away": self._build_jersey_grid(grids, "away", 1),
+        }
+
+    def _build_jersey_grid(self, parent: ttk.Frame, side: str, column: int) -> ttk.Labelframe:
+        frame = ttk.Labelframe(parent, text=side.title(), padding=6)
+        frame.grid(row=0, column=column, sticky="nsew", padx=(0, 6) if column == 0 else (6, 0))
+        for index in range(JERSEY_NUMBERS_PER_ROW):
+            frame.columnconfigure(index, weight=1, uniform="cell")
+        for index in range(JERSEY_GRID_ROWS):
+            frame.rowconfigure(index, weight=1, uniform="cell")
+
+        self.jersey_cells[side] = {}
+        for number in range(JERSEY_GRID_ROWS * JERSEY_NUMBERS_PER_ROW):
+            cell = tk.Label(
+                frame, text=str(number), font=("Segoe UI", 7), width=7, height=2,
+                relief="solid", borderwidth=1, background="#f5f5f5", foreground="#c0c0c0",
+                justify="center", anchor="center",
+            )
+            cell.grid(
+                row=number // JERSEY_NUMBERS_PER_ROW,
+                column=number % JERSEY_NUMBERS_PER_ROW,
+                sticky="nsew", padx=1, pady=1,
+            )
+            cell.bind("<Button-1>", lambda _event, side=side, number=number:
+                      self._jersey_cell_clicked(side, number))
+            self.jersey_cells[side][number] = {"widget": cell, "players": []}
+        return frame
+
+    def _refresh_jersey_grid(self) -> None:
+        if not hasattr(self, "jersey_frames"):
+            return
+        sides = self._game_sides()
+        for side in ("home", "away"):
+            team = sides[side]
+            self.jersey_frames[side].configure(text=f"{side.title()} — {TEAM_NAMES.get(team, team)}")
+            by_number: dict[int, list[pd.Series]] = {}
+            if not self.roster.empty and team:
+                for _, player in self.roster[self.roster["team"] == team].iterrows():
+                    number = self._jersey_int(safe_get(player, "jersey_number"))
+                    if number is None:
+                        continue  # blank/odd jersey: still findable via Player Lookup
+                    by_number.setdefault(number, []).append(player)
+            for number, cell in self.jersey_cells[side].items():
+                players = by_number.get(number, [])
+                cell["players"] = players
+                widget = cell["widget"]
+                if not players:
+                    widget.configure(
+                        text=str(number), background="#f5f5f5", foreground="#c0c0c0",
+                        font=("Segoe UI", 7),
+                    )
+                    continue
+                name = self._short_name(safe_get(players[0], "player_display_name", ""))
+                extra = f" +{len(players) - 1}" if len(players) > 1 else ""
+                widget.configure(
+                    text=f"{number}\n{name}{extra}",
+                    # Amber flags a number worn by more than one player, which is
+                    # common on 90-man preseason rosters.
+                    background="#fdebc8" if len(players) > 1 else "#e6f0fb",
+                    foreground="#102a43",
+                    font=("Segoe UI", 7, "bold" if len(players) > 1 else "normal"),
+                )
+
+    @staticmethod
+    def _jersey_int(value) -> int | None:
+        try:
+            number = int(float(value))
+        except (TypeError, ValueError):
+            return None
+        return number if 0 <= number < JERSEY_GRID_ROWS * JERSEY_NUMBERS_PER_ROW else None
+
+    # Suffixes must be skipped or "Chris Godwin Jr." renders as a cell reading "Jr.",
+    # which defeats the point of a grid you scan for instant recognition.
+    NAME_SUFFIXES = {"JR", "JR.", "SR", "SR.", "II", "III", "IV", "V"}
+
+    @classmethod
+    def _short_name(cls, value: str) -> str:
+        parts = [part for part in str(value).split() if part]
+        while len(parts) > 1 and parts[-1].upper() in cls.NAME_SUFFIXES:
+            parts.pop()
+        return parts[-1][:9] if parts else ""
+
+    def _jersey_cell_clicked(self, side: str, number: int) -> None:
+        players = self.jersey_cells[side][number]["players"]
+        if not players:
+            self.status_text.set(f"No #{number} on the {side} roster")
+            return
+        self.workspace_tabs.select(self.player_page)
+        if len(players) > 1:
+            # Preseason 90-man rosters routinely double up on a number. List every
+            # player wearing it — but only on the team whose grid was clicked, so a
+            # home-grid click never surfaces the away team first.
+            team = normalize_team_code(safe_get(players[0], "team"))
+            self.result_tabs.select(0)
+            self.results.delete(0, tk.END)
+            self._show_roster_rows(pd.DataFrame(players), f"#{number} on {team}")
+            return
+        self.show_selected_player(selected_row=players[0], mode="roster")
+        self.status_text.set(
+            f"#{number} — {safe_get(players[0], 'player_display_name')} "
+            f"({normalize_team_code(safe_get(players[0], 'team'))})"
+        )
 
     def _build_live_tab(self) -> None:
         controls = ttk.Frame(self.live_page)
@@ -450,6 +977,9 @@ class NFLStatsApp(tk.Tk):
                     dict.fromkeys(normalize_team_code(code) for code in str(value).split(", ") if code)
                 )
             )
+        # Both new tabs read self.roster, so rebuild them whenever it is replaced.
+        self._refresh_call_sheet()
+        self._refresh_jersey_grid()
 
     def get_game_team_codes(self) -> list[str]:
         codes = [
@@ -482,6 +1012,16 @@ class NFLStatsApp(tk.Tk):
         self.home_team_label.set(home)
         self.away_team_label.set(away)
         self.status_text.set(f"Game setup: {away} at {home}")
+        # A new matchup means a different call sheet file and different rosters.
+        self._refresh_call_sheet()
+        self._refresh_jersey_grid()
+
+    def _workspace_tab_changed(self, _event=None) -> None:
+        current = self.workspace_tabs.select()
+        if current == str(self.call_sheet_page):
+            self._refresh_call_sheet()
+        elif current == str(self.jersey_page):
+            self._refresh_jersey_grid()
 
     def _open_game_roster(self, side: str) -> None:
         code = TEAM_LABEL_TO_CODE.get(
@@ -1037,6 +1577,14 @@ class NFLStatsApp(tk.Tk):
             if column in preseason.columns and not preseason.empty:
                 leader = preseason.sort_values(column, ascending=False).iloc[0]
                 lines.append(f"- {label}: {safe_get(leader, 'player_display_name')} — {format_number(safe_get(leader, column))} yards")
+        assigned = sum(1 for side in ("home", "away")
+                       for row in self.call_sheet_rows[side] if row["call_up"])
+        if assigned:
+            lines.append("")
+            lines.extend(self.call_sheet_lines("home"))
+            lines.append("")
+            lines.extend(self.call_sheet_lines("away"))
+
         lines.extend([
             "", "BROADCAST NOTES",
             "- Use # search to identify players quickly.",
