@@ -76,12 +76,13 @@ class NFLStatsApp(tk.Tk):
         self.home_team_label = tk.StringVar(value="TB")
         self.away_team_label = tk.StringVar(value="NYJ")
         self.status_text = tk.StringVar(value="Loading databases...")
+        self.data_freshness_text = tk.StringVar(value="Data as of — checking...")
 
         self.player_title = tk.StringVar(value="Search for a player to begin")
         self.player_bio = tk.StringVar(value="")
         self.player_status = tk.StringVar(value="")
-        self.career_summary = tk.StringVar(value="Career: No player selected")
-        self.season_summary = tk.StringVar(value=f"{CURRENT_SEASON}: No player selected")
+        self.career_summary = tk.StringVar(value="Career (Reg Season): No player selected")
+        self.season_summary = tk.StringVar(value=f"{CURRENT_SEASON} (Reg Season): No player selected")
         self.preseason_summary = tk.StringVar(value=f"{PRESEASON_SEASON} Preseason: No player selected")
         self.broadcast_note = tk.StringVar(value="Broadcast Note: —")
         self.confidence_text = tk.StringVar(value="Stats: RED — no player selected")
@@ -176,6 +177,10 @@ class NFLStatsApp(tk.Tk):
         ttk.Button(frame, text="Open Home Roster", command=lambda: self._open_game_roster("home")).grid(row=0, column=5, padx=3)
         ttk.Button(frame, text="Open Away Roster", command=lambda: self._open_game_roster("away")).grid(row=0, column=6, padx=3)
 
+        ttk.Label(
+            frame, textvariable=self.data_freshness_text, style="Status.TLabel",
+        ).grid(row=1, column=0, columnspan=7, sticky="w", pady=(6, 0))
+
     def _build_player_lookup(self) -> None:
         search_frame = ttk.Frame(self.player_page, padding=(0, 2, 0, 8))
         search_frame.pack(fill="x")
@@ -219,8 +224,8 @@ class NFLStatsApp(tk.Tk):
         self._build_player_card(details_frame)
         self.stat_tabs = ttk.Notebook(details_frame)
         self.stat_tabs.pack(fill="both", expand=True, pady=(8, 0))
-        self.career_tree = self._create_stat_tab("Career")
-        self.season_tree = self._create_stat_tab(f"{CURRENT_SEASON} Season")
+        self.career_tree = self._create_stat_tab("Career (Reg Season)")
+        self.season_tree = self._create_stat_tab(f"{CURRENT_SEASON} Season (Reg Season)")
         self.preseason_tree = self._create_stat_tab(f"{PRESEASON_SEASON} Preseason")
 
     def _build_player_card(self, parent: ttk.Frame) -> None:
@@ -387,7 +392,32 @@ class NFLStatsApp(tk.Tk):
         tree.pack(fill="both", expand=True)
         return tree
 
+    def _refresh_data_freshness(self) -> None:
+        """Show each export's file mtime so staleness is visible at a glance.
+
+        nfl.load_rosters() is a periodic upstream snapshot, not a live feed. During
+        roster-cutdown periods it can lag real moves by hours, so the roster age is
+        called out explicitly before anyone trusts an "Active" tag on air.
+        """
+        now = datetime.now()
+        parts = []
+        for label, path in (
+            ("Roster", ROSTER_FILE), ("Career", CAREER_FILE),
+            ("Season", SEASON_FILE), ("Preseason", PRESEASON_FILE),
+        ):
+            if not path.exists():
+                parts.append(f"{label}: MISSING")
+                continue
+            stamp = datetime.fromtimestamp(path.stat().st_mtime)
+            text = stamp.strftime("%b %d %I:%M %p")
+            if label == "Roster":
+                hours = (now - stamp).total_seconds() / 3600
+                text += f" ({hours:.0f}h old)" if hours >= 1 else " (under 1h old)"
+            parts.append(f"{label}: {text}")
+        self.data_freshness_text.set("Data as of —   " + "   |   ".join(parts))
+
     def load_databases(self) -> None:
+        self._refresh_data_freshness()
         missing = [
             path.name for path in (CAREER_FILE, SEASON_FILE, ROSTER_FILE, PRESEASON_FILE)
             if not path.exists()
@@ -629,8 +659,8 @@ class NFLStatsApp(tk.Tk):
         career_text = self._position_summary(career, "career_", position)
         season_text = self._position_summary(season, f"season_{CURRENT_SEASON}_", position)
         preseason_text = self._position_summary(preseason, "preseason_", position)
-        self.career_summary.set(f"Career: {career_text}")
-        self.season_summary.set(f"{CURRENT_SEASON}: {season_text}")
+        self.career_summary.set(f"Career (Reg Season): {career_text}")
+        self.season_summary.set(f"{CURRENT_SEASON} (Reg Season): {season_text}")
         self.preseason_summary.set(f"{PRESEASON_SEASON} Preseason: {preseason_text}")
         self.broadcast_note.set(f"Broadcast Note: {milestone_note(position, career)}")
 
@@ -677,7 +707,7 @@ class NFLStatsApp(tk.Tk):
             text = f"{name.upper()}\n{summary}"
             label = "Lower Third"
         elif kind == "fullscreen":
-            text = f"{name.upper()} — CAREER {position}\n{summary}"
+            text = f"{name.upper()} — CAREER (REG SEASON) {position}\n{summary}"
             label = "Fullscreen Stat"
         elif kind == "announcer":
             text = f"{name} enters with {summary.lower().replace(' | ', ', ')}."
@@ -990,7 +1020,7 @@ class NFLStatsApp(tk.Tk):
                 lines.append(f"#{self._format_jersey(safe_get(player, 'jersey_number')) or '?'} — {safe_get(player, 'player_display_name')} — {safe_get(player, 'position')}")
             lines.append("")
 
-        lines.extend(["KEY CAREER PLAYERS"])
+        lines.extend(["KEY CAREER PLAYERS (REG SEASON TOTALS — PLAYOFFS NOT INCLUDED)"])
         game_roster = self.roster[self.roster["team"].isin((home, away))]
         key_players = []
         for _, player in game_roster.iterrows():
@@ -1030,23 +1060,42 @@ class NFLStatsApp(tk.Tk):
         threading.Thread(target=self._update_all_data_worker, daemon=True).start()
 
     def _update_all_data_worker(self) -> None:
+        # Export each dataset as soon as it is built. The Sleeper preseason endpoint is
+        # unofficial and can fail or change shape; a failure there must still leave the
+        # career/season/roster refresh in place instead of aborting the whole update.
         try:
             stats = load_stats()
-            career = build_totals(stats, "career_")
-            season = build_totals(stats.filter(stats["season"] == CURRENT_SEASON), f"season_{CURRENT_SEASON}_")
-            roster = build_active_roster()
-            preseason = build_preseason_totals()
-            export_database(career, CAREER_FILE.name)
-            export_database(season, SEASON_FILE.name)
-            export_database(roster, ROSTER_FILE.name)
-            export_database(preseason, PRESEASON_FILE.name)
-            frames = tuple(pd.read_excel(path) for path in (CAREER_FILE, SEASON_FILE, ROSTER_FILE, PRESEASON_FILE))
+            export_database(build_totals(stats, "career_"), CAREER_FILE.name)
+            export_database(
+                build_totals(stats.filter(stats["season"] == CURRENT_SEASON), f"season_{CURRENT_SEASON}_"),
+                SEASON_FILE.name,
+            )
+            export_database(build_active_roster(), ROSTER_FILE.name)
         except Exception as error:
             self.after(0, lambda error=error: self._finish_data_update(error=error))
             return
-        self.after(0, lambda: self._finish_data_update(frames=frames))
 
-    def _finish_data_update(self, frames=None, error: Exception | None = None) -> None:
+        preseason_error: Exception | None = None
+        try:
+            export_database(build_preseason_totals(), PRESEASON_FILE.name)
+        except Exception as error:
+            preseason_error = error
+
+        try:
+            frames = tuple(
+                pd.read_excel(path) if path.exists() else pd.DataFrame()
+                for path in (CAREER_FILE, SEASON_FILE, ROSTER_FILE, PRESEASON_FILE)
+            )
+        except Exception as error:
+            self.after(0, lambda error=error: self._finish_data_update(error=error))
+            return
+        self.after(
+            0,
+            lambda: self._finish_data_update(frames=frames, partial_error=preseason_error),
+        )
+
+    def _finish_data_update(self, frames=None, error: Exception | None = None,
+                            partial_error: Exception | None = None) -> None:
         self.update_button.configure(state="normal")
         if error is not None:
             self.status_text.set("Data update failed.")
@@ -1054,6 +1103,22 @@ class NFLStatsApp(tk.Tk):
             return
         self._install_dataframes(*frames)
         self.show_selected_team()
+        self._refresh_data_freshness()
+        if partial_error is not None:
+            self.status_text.set(
+                f"Career, season, and roster updated — PRESEASON REFRESH FAILED "
+                f"({type(partial_error).__name__}: {partial_error})"
+            )
+            messagebox.showwarning(
+                APP_TITLE,
+                "Career, season, and roster data updated successfully.\n\n"
+                f"The preseason file could NOT be refreshed:\n\n"
+                f"{type(partial_error).__name__}: {partial_error}\n\n"
+                f"{PRESEASON_FILE.name} still holds whatever it had before this update, "
+                "so preseason numbers may be missing or out of date. Everything else is "
+                "current — check the 'Data as of' line above.",
+            )
+            return
         self.status_text.set(f"All data updated — {len(self.career):,} valid players, {len(self.roster):,} roster entries")
         messagebox.showinfo(APP_TITLE, "Career, season, preseason, and roster data updated successfully.")
 

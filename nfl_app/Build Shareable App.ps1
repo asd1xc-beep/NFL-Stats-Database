@@ -20,6 +20,8 @@ Write-Host "Building the Windows application..."
     --collect-all nflreadpy `
     --collect-all polars `
     --collect-all pandas `
+    --collect-all requests `
+    --collect-all certifi `
     --hidden-import openpyxl `
     --hidden-import xlsxwriter `
     src\nfl_stats_app.py

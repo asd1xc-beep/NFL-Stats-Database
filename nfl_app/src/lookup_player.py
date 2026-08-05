@@ -55,6 +55,10 @@ STAT_GROUPS = {
     "K": [("Games", "games"), ("Seasons Played", "seasons_played"),
           ("FG Made", "fg_made"), ("FG Attempts", "fg_att"),
           ("FG Long", "fg_long"), ("PAT Made", "pat_made"), ("PAT Attempts", "pat_att")],
+    "PUNTER": [("Games", "games"), ("Seasons Played", "seasons_played"),
+               ("Punts", "punts"), ("Punt Yards", "punt_yards"),
+               ("Average", "punt_average"), ("Long", "punt_long"),
+               ("Inside 20", "punts_inside_20")],
     "DEFENSE": [("Games", "games"), ("Seasons Played", "seasons_played"),
                 ("Solo Tackles", "def_tackles_solo"),
                 ("Assists", "def_tackle_assists"), ("Sacks", "def_sacks"),
@@ -138,6 +142,9 @@ def stat_group(position: str) -> str:
     if position in {"RB", "FB"}: return "RB"
     if position in {"WR", "TE"}: return "RECEIVER"
     if position in {"K", "PK"}: return "K"
+    if position in {"P", "PT"}: return "PUNTER"
+    # LS stays on DEFENSE: long snappers have no meaningful counting stats, and the
+    # defensive group at least shows their games and any special-teams tackles.
     return "DEFENSE"
 
 
@@ -146,13 +153,18 @@ def format_value(value, column: str = "") -> str:
     if column in {
         "passer_rating", "rushing_average", "receiving_average",
         "passing_yards_per_attempt", "receiving_yards_per_game",
+        "punt_average", "punt_net_average",
     }:
         return f"{float(value):.1f}"
     if column in {"completion_percentage", "catch_percentage"}:
         return f"{float(value):.1f}%"
-    if isinstance(value, float) and value.is_integer(): return f"{int(value):,}"
-    if isinstance(value, (int, float)): return f"{value:,}"
-    return str(value)
+    # Excel values arrive as numpy scalars, which are not instances of int/float, so
+    # convert instead of type-checking — otherwise 68411 prints without separators.
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return str(value)
+    return f"{int(number):,}" if number.is_integer() else f"{number:,.1f}"
 
 
 def print_section(title: str, row: pd.Series | None, prefix: str,
@@ -178,8 +190,8 @@ def display_player(career_row: pd.Series, season: pd.DataFrame) -> None:
     teams = career_row.get("teams_played_for", career_row.get("last_team", ""))
     print(f"{career_row['player_display_name']} | {position}")
     print(f"Teams: {teams}")
-    print_section("CAREER", career_row, "career_", stats)
-    print_section(f"{CURRENT_SEASON} SEASON", season_row, f"season_{CURRENT_SEASON}_", stats)
+    print_section("CAREER (REG SEASON)", career_row, "career_", stats)
+    print_section(f"{CURRENT_SEASON} SEASON (REG SEASON)", season_row, f"season_{CURRENT_SEASON}_", stats)
     print("=" * 52)
 
 

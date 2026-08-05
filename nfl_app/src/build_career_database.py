@@ -34,6 +34,26 @@ TOTAL_COLUMNS = [
     "pat_made", "pat_att", "fantasy_points", "fantasy_points_ppr",
 ]
 
+# nflreadpy prefixes punting stats with `pt_` (pt_att, pt_yards, pt_inside_20...).
+# Note that `punt_returns`/`punt_return_yards` are the RETURNER's stats, not the
+# punter's, so they are deliberately not mapped here. The app and the Sleeper
+# preseason build both read broadcast-friendly names, so rename on the way in.
+PUNTING_SUM_COLUMNS = {
+    "pt_att": "punts",
+    "pt_yards": "punt_yards",
+    "pt_net_yards": "punt_net_yards",
+    "pt_inside_20": "punts_inside_20",
+    "pt_touchback": "punt_touchbacks",
+    "pt_blocked": "punts_blocked",
+}
+
+# Longest-kick columns are a max across seasons, never a sum. Both are optional:
+# if the upstream feed drops one, it is simply skipped like any other column.
+MAX_COLUMNS = {
+    "fg_long": "fg_long",
+    "pt_long": "punt_long",
+}
+
 
 def load_stats() -> pl.DataFrame:
     print(f"Loading regular-season player stats for {CAREER_SEASONS[0]}-{CAREER_SEASONS[-1]}...")
@@ -50,7 +70,16 @@ def build_totals(stats: pl.DataFrame, prefix: str) -> pl.DataFrame:
         & (pl.col("player_display_name").str.strip_chars() != "")
     )
     available = [column for column in TOTAL_COLUMNS if column in stats.columns]
-    missing = [column for column in TOTAL_COLUMNS if column not in stats.columns]
+    renamed = {
+        source: target for source, target in PUNTING_SUM_COLUMNS.items()
+        if source in stats.columns
+    }
+    maxed = {
+        source: target for source, target in MAX_COLUMNS.items()
+        if source in stats.columns
+    }
+    wanted = list(TOTAL_COLUMNS) + list(PUNTING_SUM_COLUMNS) + list(MAX_COLUMNS)
+    missing = [column for column in wanted if column not in stats.columns]
     if missing:
         print(f"Skipping unavailable columns: {', '.join(missing)}")
 
@@ -67,10 +96,14 @@ def build_totals(stats: pl.DataFrame, prefix: str) -> pl.DataFrame:
             pl.col("recent_team").drop_nulls().unique(maintain_order=True).str.join(", ").alias("teams_played_for"),
             pl.col("headshot_url").drop_nulls().last().alias("headshot_url"),
             *[pl.col(column).fill_null(0).sum().alias(f"{prefix}{column}") for column in available],
-            *(
-                [pl.col("fg_long").fill_null(0).max().alias(f"{prefix}fg_long")]
-                if "fg_long" in stats.columns else []
-            ),
+            *[
+                pl.col(source).fill_null(0).sum().alias(f"{prefix}{target}")
+                for source, target in renamed.items()
+            ],
+            *[
+                pl.col(source).fill_null(0).max().alias(f"{prefix}{target}")
+                for source, target in maxed.items()
+            ],
         )
     )
     td_columns = [
@@ -95,6 +128,21 @@ def build_totals(stats: pl.DataFrame, prefix: str) -> pl.DataFrame:
         + (2.375 - interceptions / attempts * 25).clip(0, 2.375)
     ) / 6 * 100
 
+    # Punting averages only exist when the punting columns made it through above.
+    punting_averages = []
+    if f"{prefix}punts" in totals.columns:
+        punts = pl.col(f"{prefix}punts")
+        for yards_column, average_column in (
+            (f"{prefix}punt_yards", f"{prefix}punt_average"),
+            (f"{prefix}punt_net_yards", f"{prefix}punt_net_average"),
+        ):
+            if yards_column in totals.columns:
+                punting_averages.append(
+                    pl.when(punts > 0)
+                    .then((pl.col(yards_column) / punts).round(1))
+                    .otherwise(0.0).alias(average_column)
+                )
+
     return totals.with_columns(
         pl.when(attempts > 0).then(passer_rating.round(1)).otherwise(0.0)
         .alias(f"{prefix}passer_rating"),
@@ -114,6 +162,7 @@ def build_totals(stats: pl.DataFrame, prefix: str) -> pl.DataFrame:
         pl.when(pl.col(f"{prefix}games") > 0)
         .then((pl.col(f"{prefix}receiving_yards") / pl.col(f"{prefix}games")).round(1))
         .otherwise(0.0).alias(f"{prefix}receiving_yards_per_game"),
+        *punting_averages,
     ).sort("player_display_name")
 
 
@@ -202,6 +251,14 @@ def build_preseason_totals() -> pl.DataFrame:
         "def_fumbles_forced": "idp_ff", "def_tds": "idp_def_td",
         "fg_made": "fgm", "fg_att": "fga", "fg_long": "fgm_lng",
         "pat_made": "xpm", "pat_att": "xpa",
+        # Sleeper's punting keys are inconsistently abbreviated (punt_yds but
+        # punt_net_yd), and it publishes no longest-punt field at all — the *_lng
+        # keys only cover passing/rushing/receiving/returns and fgm_lng. So
+        # preseason_punt_long is intentionally absent rather than a bogus 0;
+        # the punter card and stat tab already skip columns that are missing.
+        "punts": "punts", "punt_yards": "punt_yds",
+        "punt_net_yards": "punt_net_yd", "punts_inside_20": "punt_in_20",
+        "punt_touchbacks": "punt_tb",
     }
     rows = []
     for item in response.json():
@@ -248,6 +305,10 @@ def build_preseason_totals() -> pl.DataFrame:
         row["preseason_receiving_average"] = round(row["preseason_receiving_yards"] / receptions, 1) if receptions else 0.0
         row["preseason_catch_percentage"] = round(receptions / targets * 100, 1) if targets else 0.0
         row["preseason_receiving_yards_per_game"] = round(row["preseason_receiving_yards"] / games, 1) if games else 0.0
+
+        punts = row["preseason_punts"]
+        row["preseason_punt_average"] = round(row["preseason_punt_yards"] / punts, 1) if punts else 0.0
+        row["preseason_punt_net_average"] = round(row["preseason_punt_net_yards"] / punts, 1) if punts else 0.0
         row["preseason_total_tds"] = sum(
             row[f"preseason_{name}"]
             for name in ("passing_tds", "rushing_tds", "receiving_tds", "def_tds")
@@ -262,6 +323,7 @@ def build_preseason_totals() -> pl.DataFrame:
             "preseason_passing_yards_per_attempt", "preseason_rushing_average",
             "preseason_receiving_average", "preseason_catch_percentage",
             "preseason_receiving_yards_per_game", "preseason_total_tds",
+            "preseason_punt_average", "preseason_punt_net_average",
         ]
         schema = {
             column: pl.Utf8 if column in {
@@ -274,17 +336,27 @@ def build_preseason_totals() -> pl.DataFrame:
 
 
 def main() -> None:
+    # Export each dataset as soon as it is built. The Sleeper preseason endpoint is
+    # unofficial and can fail or change shape, and it must not be able to discard
+    # career/season/roster data that already built successfully.
     stats = load_stats()
     print("Building career totals...")
-    career = build_totals(stats, "career_")
+    export_database(build_totals(stats, "career_"), "nfl_career_database.xlsx")
     print(f"Building {CURRENT_SEASON} totals...")
-    season = build_totals(stats.filter(pl.col("season") == CURRENT_SEASON), f"season_{CURRENT_SEASON}_")
-    roster = build_active_roster()
-    preseason = build_preseason_totals()
-    export_database(career, "nfl_career_database.xlsx")
-    export_database(season, "nfl_latest_season_database.xlsx")
-    export_database(roster, "nfl_current_active_rosters.xlsx")
-    export_database(preseason, PRESEASON_FILE.name)
+    export_database(
+        build_totals(stats.filter(pl.col("season") == CURRENT_SEASON), f"season_{CURRENT_SEASON}_"),
+        "nfl_latest_season_database.xlsx",
+    )
+    export_database(build_active_roster(), "nfl_current_active_rosters.xlsx")
+    try:
+        export_database(build_preseason_totals(), PRESEASON_FILE.name)
+    except Exception as error:
+        print(
+            f"WARNING: preseason build failed ({type(error).__name__}: {error}).\n"
+            f"         Skipped {PRESEASON_FILE.name}; career, season, and roster data were exported."
+        )
+        print("Done, with the preseason file skipped.")
+        return
     print("Done.")
 
 

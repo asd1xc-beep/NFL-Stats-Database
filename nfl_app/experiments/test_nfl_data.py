@@ -1,3 +1,7 @@
+# PARKED: uses the older nfl_data_py package (different column names than nflreadpy,
+# and not in requirements-app.txt, so it will not even import). Superseded by
+# src/test_nflreadpy.py. Not an active code path.
+
 import nfl_data_py as nfl
 
 print("Downloading 2023-2025 player stats...")

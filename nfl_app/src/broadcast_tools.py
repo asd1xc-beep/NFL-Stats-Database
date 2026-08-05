@@ -104,6 +104,25 @@ def ordinal_experience(value) -> str:
     return f"{season}{suffix} season"
 
 
+MILESTONE_COUNT_FRACTION = 0.35
+MILESTONE_COUNT_FLOOR = 5
+MILESTONE_YARDAGE_WINDOW = 200
+
+
+def milestone_window(column: str, interval: int) -> float:
+    """How close to the next round number counts as 'near a milestone'.
+
+    A 35% window is fine for counting stats (TDs, sacks, field goals) but on
+    yardage intervals it would flag a passer 1,750 yards out, which is not
+    something you would say on air. Yardage milestones therefore use a flat
+    one-good-game window instead. Any future `*_yards` candidate inherits the
+    tight window automatically, which is the safer default.
+    """
+    if column.endswith("_yards"):
+        return min(MILESTONE_YARDAGE_WINDOW, interval * MILESTONE_COUNT_FRACTION)
+    return max(interval * MILESTONE_COUNT_FRACTION, MILESTONE_COUNT_FLOOR)
+
+
 def milestone_note(position: str, career_row: pd.Series | None) -> str:
     if career_row is None:
         return "No verified career milestone note available."
@@ -117,15 +136,21 @@ def milestone_note(position: str, career_row: pd.Series | None) -> str:
         candidates = [("career_receiving_yards", 1000, "receiving yards"), ("career_receptions", 100, "receptions"), ("career_receiving_tds", 10, "receiving TD")]
     elif position in {"K", "PK"}:
         candidates = [("career_fg_made", 50, "field goals made")]
+    elif position in {"P", "PT"}:
+        candidates = [("career_punt_yards", 5000, "punting yards"), ("career_punts", 100, "punts")]
     else:
         candidates = [("career_def_sacks", 10, "sacks"), ("career_def_interceptions", 5, "interceptions")]
     for column, interval, label in candidates:
         if column not in career_row.index or pd.isna(career_row[column]):
             continue
         current = float(career_row[column])
+        if current <= 0:
+            # A player with none of a stat is not "approaching" its first round number.
+            # Without this, every punter/lineman got "Needs 5 interceptions to reach 5".
+            continue
         target = (int(current // interval) + 1) * interval
         needed = target - current
-        if 0 < needed <= max(interval * 0.35, 5):
+        if 0 < needed <= milestone_window(column, interval):
             return f"Needs {format_number(needed)} {label} to reach {target:,} career {label}."
     return "No nearby standard career milestone identified."
 

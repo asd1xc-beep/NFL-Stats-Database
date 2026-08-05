@@ -1,3 +1,6 @@
+# PARKED: abandoned Pro Football Reference scraper — PFR returns 403 (see PROJECT_NOTES.md);
+# the app uses nflreadpy instead. Kept for reference only, not an active code path.
+
 import requests
 import os
 
