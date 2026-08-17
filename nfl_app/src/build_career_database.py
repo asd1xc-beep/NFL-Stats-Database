@@ -62,7 +62,61 @@ def load_stats() -> pl.DataFrame:
     return stats
 
 
-def build_totals(stats: pl.DataFrame, prefix: str) -> pl.DataFrame:
+def load_team_history_stats() -> pl.DataFrame:
+    """Load weekly rows so midseason team changes are not lost."""
+    print(f"Loading weekly team history for {CAREER_SEASONS[0]}-{CAREER_SEASONS[-1]}...")
+    stats = nfl.load_player_stats(seasons=CAREER_SEASONS, summary_level="week")
+    print(f"Weekly team-history rows loaded: {stats.height:,}.\n")
+    return stats
+
+
+def build_team_history(weekly_stats: pl.DataFrame) -> pl.DataFrame:
+    """Build chronological regular-season team codes for each player."""
+    required = {"player_id", "season", "team"}
+    missing = sorted(required.difference(weekly_stats.columns))
+    if missing:
+        raise ValueError(f"Weekly team history is missing columns: {', '.join(missing)}")
+
+    history = weekly_stats
+    if "season_type" in history.columns:
+        history = history.filter(pl.col("season_type") == "REG")
+    sort_columns = [column for column in ("player_id", "season", "week") if column in history.columns]
+    return (
+        history.filter(
+            pl.col("player_id").is_not_null()
+            & pl.col("team").is_not_null()
+            & (pl.col("team").str.strip_chars() != "")
+        )
+        .with_columns(pl.col("team").str.strip_chars().str.to_uppercase())
+        .sort(sort_columns)
+        .group_by("player_id", maintain_order=True)
+        .agg(
+            pl.col("team").unique(maintain_order=True).str.join(", ").alias("teams_played_for")
+        )
+    )
+
+
+def apply_team_history(totals: pl.DataFrame, team_history: pl.DataFrame | None) -> pl.DataFrame:
+    """Replace season-summary history while retaining its value as a safe fallback."""
+    if team_history is None or team_history.is_empty():
+        return totals
+    if "teams_played_for" not in totals.columns:
+        return totals.join(team_history, on="player_id", how="left")
+
+    fallback = "_summary_team_history"
+    return (
+        totals.rename({"teams_played_for": fallback})
+        .join(team_history, on="player_id", how="left")
+        .with_columns(
+            pl.coalesce(pl.col("teams_played_for"), pl.col(fallback)).alias("teams_played_for")
+        )
+        .drop(fallback)
+    )
+
+
+def build_totals(
+    stats: pl.DataFrame, prefix: str, team_history: pl.DataFrame | None = None,
+) -> pl.DataFrame:
     """Build one row per player and prefix every summed statistic."""
     stats = stats.filter(
         pl.col("player_id").is_not_null()
@@ -143,7 +197,7 @@ def build_totals(stats: pl.DataFrame, prefix: str) -> pl.DataFrame:
                     .otherwise(0.0).alias(average_column)
                 )
 
-    return totals.with_columns(
+    totals = totals.with_columns(
         pl.when(attempts > 0).then(passer_rating.round(1)).otherwise(0.0)
         .alias(f"{prefix}passer_rating"),
         pl.when(attempts > 0).then((completions / attempts * 100).round(1)).otherwise(0.0)
@@ -164,6 +218,7 @@ def build_totals(stats: pl.DataFrame, prefix: str) -> pl.DataFrame:
         .otherwise(0.0).alias(f"{prefix}receiving_yards_per_game"),
         *punting_averages,
     ).sort("player_display_name")
+    return apply_team_history(totals, team_history)
 
 
 def export_database(database: pl.DataFrame, filename: str) -> None:
@@ -340,11 +395,23 @@ def main() -> None:
     # unofficial and can fail or change shape, and it must not be able to discard
     # career/season/roster data that already built successfully.
     stats = load_stats()
+    weekly_stats = load_team_history_stats()
+    career_team_history = build_team_history(weekly_stats)
+    current_team_history = build_team_history(
+        weekly_stats.filter(pl.col("season") == CURRENT_SEASON)
+    )
     print("Building career totals...")
-    export_database(build_totals(stats, "career_"), "nfl_career_database.xlsx")
+    export_database(
+        build_totals(stats, "career_", career_team_history),
+        "nfl_career_database.xlsx",
+    )
     print(f"Building {CURRENT_SEASON} totals...")
     export_database(
-        build_totals(stats.filter(pl.col("season") == CURRENT_SEASON), f"season_{CURRENT_SEASON}_"),
+        build_totals(
+            stats.filter(pl.col("season") == CURRENT_SEASON),
+            f"season_{CURRENT_SEASON}_",
+            current_team_history,
+        ),
         "nfl_latest_season_database.xlsx",
     )
     export_database(build_active_roster(), "nfl_current_active_rosters.xlsx")

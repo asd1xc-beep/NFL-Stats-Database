@@ -11,13 +11,14 @@ import pandas as pd
 
 from app_paths import APP_ROOT, EXPORT_DIR
 from broadcast_tools import (
-    GRAPHIC_SUGGESTIONS, TEAM_NAMES, clean_dataframe, format_number,
-    milestone_note, normalize_team_code, ordinal_experience, packet_filename,
-    safe_get, write_game_packet,
+    GRAPHIC_SUGGESTIONS, TEAM_NAMES, career_team_codes, clean_dataframe,
+    format_number, milestone_note, normalize_team_code, ordinal_experience,
+    packet_filename, safe_get, write_game_packet,
 )
 from build_career_database import (
-    CURRENT_SEASON, PRESEASON_SEASON, build_active_roster,
-    build_preseason_totals, build_totals, export_database, load_stats,
+    CURRENT_SEASON, PRESEASON_SEASON, build_active_roster, build_preseason_totals,
+    build_team_history, build_totals, export_database, load_stats,
+    load_team_history_stats,
 )
 from call_sheet import (
     duplicate_keys, duplicate_values, load_call_sheet, normalize_call_up,
@@ -89,6 +90,7 @@ class NFLStatsApp(tk.Tk):
         self.player_title = tk.StringVar(value="Search for a player to begin")
         self.player_bio = tk.StringVar(value="")
         self.player_status = tk.StringVar(value="")
+        self.player_teams = tk.StringVar(value="Career Teams: —")
         self.career_summary = tk.StringVar(value="Career (Reg Season): No player selected")
         self.season_summary = tk.StringVar(value=f"{CURRENT_SEASON} (Reg Season): No player selected")
         self.preseason_summary = tk.StringVar(value=f"{PRESEASON_SEASON} Preseason: No player selected")
@@ -270,7 +272,8 @@ class NFLStatsApp(tk.Tk):
         card.pack(fill="x")
         ttk.Label(card, textvariable=self.player_title, style="Player.TLabel").pack(anchor="w")
         ttk.Label(card, textvariable=self.player_status, style="CardBold.TLabel", wraplength=690).pack(anchor="w", pady=(2, 0))
-        ttk.Label(card, textvariable=self.player_bio, style="Card.TLabel", wraplength=690).pack(anchor="w", pady=(1, 6))
+        ttk.Label(card, textvariable=self.player_bio, style="Card.TLabel", wraplength=690).pack(anchor="w", pady=(1, 0))
+        ttk.Label(card, textvariable=self.player_teams, style="Card.TLabel", wraplength=690).pack(anchor="w", pady=(1, 6))
         ttk.Separator(card).pack(fill="x", pady=3)
         ttk.Label(card, textvariable=self.career_summary, style="CardBold.TLabel", wraplength=690).pack(anchor="w")
         ttk.Label(card, textvariable=self.season_summary, style="Card.TLabel", wraplength=690).pack(anchor="w")
@@ -1196,6 +1199,12 @@ class NFLStatsApp(tk.Tk):
         if age: bio_parts.append(f"Age: {format_number(age)}")
         self.player_bio.set(" | ".join(bio_parts) if bio_parts else "Bio information not available")
 
+        team_history = career_team_codes(career)
+        self.player_teams.set(
+            f"Career Teams: {', '.join(team_history)}"
+            if team_history else "Career Teams: No regular-season history available"
+        )
+
         career_text = self._position_summary(career, "career_", position)
         season_text = self._position_summary(season, f"season_{CURRENT_SEASON}_", position)
         preseason_text = self._position_summary(preseason, "preseason_", position)
@@ -1613,9 +1622,21 @@ class NFLStatsApp(tk.Tk):
         # career/season/roster refresh in place instead of aborting the whole update.
         try:
             stats = load_stats()
-            export_database(build_totals(stats, "career_"), CAREER_FILE.name)
+            weekly_stats = load_team_history_stats()
+            career_team_history = build_team_history(weekly_stats)
+            current_team_history = build_team_history(
+                weekly_stats.filter(weekly_stats["season"] == CURRENT_SEASON)
+            )
             export_database(
-                build_totals(stats.filter(stats["season"] == CURRENT_SEASON), f"season_{CURRENT_SEASON}_"),
+                build_totals(stats, "career_", career_team_history),
+                CAREER_FILE.name,
+            )
+            export_database(
+                build_totals(
+                    stats.filter(stats["season"] == CURRENT_SEASON),
+                    f"season_{CURRENT_SEASON}_",
+                    current_team_history,
+                ),
                 SEASON_FILE.name,
             )
             export_database(build_active_roster(), ROSTER_FILE.name)

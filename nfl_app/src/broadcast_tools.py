@@ -69,6 +69,23 @@ def normalize_team_code(value) -> str:
     return TEAM_CODE_NORMALIZATION.get(code, code)
 
 
+def career_team_codes(row) -> list[str]:
+    """Return a player's regular-season team history as normalized codes."""
+    raw_teams = safe_get(row, "teams_played_for")
+    if not raw_teams:
+        raw_teams = safe_get(row, "last_team")
+    if not raw_teams:
+        return []
+
+    values = raw_teams if isinstance(raw_teams, (list, tuple, set)) else str(raw_teams).split(",")
+    codes = []
+    for value in values:
+        code = normalize_team_code(value)
+        if code and code not in codes:
+            codes.append(code)
+    return codes
+
+
 def clean_dataframe(df: pd.DataFrame, require_player_id: bool = False) -> pd.DataFrame:
     """Remove unusable player rows and normalize every known team-code column."""
     cleaned = df.copy()
