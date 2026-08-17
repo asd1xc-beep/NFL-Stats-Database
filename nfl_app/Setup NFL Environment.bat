@@ -10,10 +10,9 @@ if not exist ".venv\Scripts\python.exe" (
 
 echo Installing NFL app libraries...
 ".venv\Scripts\python.exe" -m pip install --upgrade pip
-".venv\Scripts\python.exe" -m pip install -r requirements.txt
+".venv\Scripts\python.exe" -m pip install -r requirements-app.txt
 
 echo.
 echo NFL environment is ready.
 echo You can now double-click "Launch NFL Stats App.bat".
 pause
-
