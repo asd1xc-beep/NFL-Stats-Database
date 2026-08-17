@@ -12,8 +12,8 @@ import requests
 from broadcast_tools import normalize_team_code
 
 
-ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard"
-ESPN_SUMMARY_URL = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary"
+ESPN_SCOREBOARD_URL = "https://site.web.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard"
+ESPN_SUMMARY_URL = "https://site.web.api.espn.com/apis/site/v2/sports/football/nfl/summary"
 REQUEST_HEADERS = {"User-Agent": "NFL Stats Lookup Broadcast Tool/1.0"}
 GSIS_SAMPLE_URL = "https://www.nflgsis.com/gsis/Documentation/StatsExporter/2014-Pre-04-nyj.zip"
 
