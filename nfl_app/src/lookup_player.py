@@ -18,7 +18,7 @@ OFFENSIVE_POSITIONS = {
 }
 DEFENSIVE_POSITIONS = {
     "DE", "DT", "NT", "DL", "EDGE", "LB", "ILB", "OLB", "MLB", "DB",
-    "CB", "S", "FS", "SS",
+    "CB", "S", "SAF", "FS", "SS",
 }
 SPECIAL_TEAMS_POSITIONS = {"K", "PK", "P", "PT", "LS"}
 TEAM_ALIASES = {
