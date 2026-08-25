@@ -283,3 +283,63 @@ snapshot and refresh automatically, with available passing, rushing, receiving, 
 kicking, punting, return, and fumble lines. Both GSIS XML and ESPN are supported.
 
 The baseline tag `working-base-v1` predates the desktop broadcast expansion.
+
+## Official GSIS Game Rosters (August 2026)
+
+GSIS is the league's own system and outranks every other roster source the app
+has. `src/gsis_roster.py` reads a game's `ROSTER.xml` and overlays it on the two
+teams in the current matchup — the rest of the league keeps whatever source it
+already had (NFL.com, then nflverse). Click **Load GSIS Roster** in Game Setup.
+
+Why it matters: during the 2026 preseason, `nfl.load_rosters()` was a single
+preliminary snapshot with no cut or practice-squad records, and only ~88.5% of
+ESPN's players appeared in it. GSIS resolved every disputed case — e.g. it has
+Travis Shaw on Tampa Bay at 71D where nflverse had him on New England.
+
+### Getting the file
+
+Reports live at a predictable path. Open a game's menu on nflgsis.com, click any
+report, and read the URL:
+
+    https://www.nflgsis.com/2026/pre/03/60480/TB_FlipCard.pdf
+                            season type wk gamekey
+
+The roster is at the same path (this is XML, not the Flip Card PDF):
+
+    https://www.nflgsis.com/{season}/{type}/{week}/{gamekey}/ROSTER.xml
+
+Save it into `data/exports/gsis/`. Both naming conventions are recognized: the
+bare `ROSTER.xml` the website serves, and the `<stamp>_<Club>_ROSTER.xml` the
+Stats Exporter writes. `GSISGameStats.xml` sits alongside it for the Live Game
+tab.
+
+The site needs an authenticated session, so the app never fetches these itself —
+files are saved by hand into the drop folder. No GSIS credentials are stored.
+
+### What GSIS gives that nothing else does
+
+- `GSISPlayer_ID` is the same id nflverse uses, so rosters join to career stats
+  with no name matching (the `Dean Patterson` / `Dean Patterson IV` class of bug).
+- Shared jersey numbers are disambiguated with a unit suffix: `71D` and `71S` are
+  two different players wearing 71 (D = defense, O = offense, S = specialist).
+  The font sheet otherwise has to guess at these and flags them amber.
+
+### Status codes
+
+Per the GSIS Stats Exporter documentation:
+
+    S  Started
+    P  Played (substitution)
+    X  Active, did not play
+    I  Injured, did not play
+    N  Not active
+    R  Injured reserve
+
+Several of these are only knowable after the game, and the website's copy is
+stamped the morning after kickoff, so it is a post-game artifact. The app labels
+them "GSIS last game:" so they are never read as tonight's availability. The
+Stats Exporter publishes rosters before kickoff, which is where a genuine
+pre-game availability designation would come from.
+
+The overlay is not written into the database files, so **Update All Data** clears
+it and the file is simply loaded again.

@@ -302,7 +302,10 @@ class GSISXMLProvider:
 
     def snapshot_files(self, folder: str | Path) -> list[Path]:
         folder = Path(folder)
-        return sorted(folder.rglob("*_GSISGameStats.xml"))
+        # The exporter prefixes a timestamp ("296546_GSISGameStats.xml"); the GSIS
+        # website serves the same file as a bare name, so match both.
+        found = set(folder.rglob("*_GSISGameStats.xml")) | set(folder.rglob("GSISGameStats.xml"))
+        return sorted(found)
 
     def fetch_latest(self, folder: str | Path) -> LiveGameSnapshot:
         files = self.snapshot_files(folder)
@@ -396,7 +399,9 @@ class GSISXMLProvider:
 
     @staticmethod
     def _roster_lookup(folder: Path) -> dict[str, dict[str, str]]:
-        roster_files = sorted(folder.glob("*_ROSTER.xml"))
+        roster_files = sorted(
+            set(folder.glob("*_ROSTER.xml")) | set(folder.glob("ROSTER.xml"))
+        )
         if not roster_files:
             return {}
         try:

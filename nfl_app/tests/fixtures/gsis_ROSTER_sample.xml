@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Trimmed from the real GSIS file served at
+     https://www.nflgsis.com/2026/pre/03/60469/ROSTER.xml
+     Keeps the cases that matter: both clubs, shared-number D/O/S suffixes,
+     every observed Status letter, and a player with no GSIS id. -->
+<RosterFile DateTimeStampUTC="2026-08-22T11:00:30.7693162Z">
+<GameKey GameKey="60469" Season="2026" SeasonType="Pre" Week="3" GameDate="20260821" GameSite="Pittsburgh" HomeClubKey="5346" HomeClubCode="PIT" HomeClubName="Pittsburgh Steelers" VisitClubKey="5343" VisitClubCode="NYJ" VisitClubName="New York Jets"/>
+<Player JerseyNumber="00" Name="B.Allen" Position="RB" Status="S" GSISPlayer_ID="00-0039794" ClubKey="5343" FirstName="Braelon" LastName="Allen" IsVerified="True"/>
+<Player JerseyNumber="07" Name="G.Smith" Position="QB" Status="S" GSISPlayer_ID="00-0030565" ClubKey="5343" FirstName="Geno" LastName="Smith" IsVerified="True"/>
+<Player JerseyNumber="35D" Name="D.Clark" Position="S" Status="P" GSISPlayer_ID="00-0040396" ClubKey="5343" FirstName="Dean" LastName="Clark" IsVerified="True"/>
+<Player JerseyNumber="35O" Name="C.Lacy" Position="WR" Status="X" GSISPlayer_ID="00-0041199" ClubKey="5343" FirstName="Caullin" LastName="Lacy" IsVerified="True"/>
+<Player JerseyNumber="20" Name="B.Hall" Position="RB" Status="X" GSISPlayer_ID="00-0038120" ClubKey="5343" FirstName="Breece" LastName="Hall" IsVerified="True"/>
+<Player JerseyNumber="19S" Name="C.Johnston" Position="P" Status="P" GSISPlayer_ID="00-0033729" ClubKey="5346" FirstName="Cameron" LastName="Johnston" IsVerified="True"/>
+<Player JerseyNumber="19D" Name="D.Slaughter" Position="DB" Status="S" GSISPlayer_ID="00-0040341" ClubKey="5346" FirstName="Doneiko" LastName="Slaughter" IsVerified="True"/>
+<Player JerseyNumber="08" Name="A.Rodgers" Position="QB" Status="X" GSISPlayer_ID="00-0023459" ClubKey="5346" FirstName="Aaron" LastName="Rodgers" IsVerified="True"/>
+<Player JerseyNumber="90" Name="T.Watt" Position="LB" Status="X" GSISPlayer_ID="00-0033886" ClubKey="5346" FirstName="T.J." LastName="Watt" IsVerified="True"/>
+<Player JerseyNumber="61" Name="G.Crippen" Position="C" Status="P" GSISPlayer_ID="" ClubKey="5346" FirstName="Greg" LastName="Crippen" IsVerified="True"/>
+</RosterFile>

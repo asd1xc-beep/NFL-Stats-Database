@@ -6,7 +6,7 @@ from pathlib import Path
 import os
 import threading
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import filedialog, messagebox, ttk
 
 import pandas as pd
 
@@ -22,6 +22,11 @@ from build_career_database import (
     get_last_roster_update_warning, load_stats, load_team_history_stats,
 )
 from font_sheet import write_font_sheet
+from gsis_roster import (
+    ROSTER_SOURCE as GSIS_ROSTER_SOURCE, apply_to_roster as apply_gsis_roster,
+    find_roster_files as find_gsis_roster_files, parse_roster_file as parse_gsis_roster,
+    status_label as gsis_status_label,
+)
 from call_sheet import (
     duplicate_keys, duplicate_values, load_call_sheet, normalize_call_up,
     save_call_sheet,
@@ -138,6 +143,7 @@ class NFLStatsApp(tk.Tk):
         self._callup_editor: ttk.Entry | None = None
         self._callup_highlight_job: dict[str, str] = {}
         self.jersey_cells: dict[str, dict[int, dict]] = {"home": {}, "away": {}}
+        self.gsis_roster_label = ""
 
         self._set_style()
         self._build_window()
@@ -218,10 +224,11 @@ class NFLStatsApp(tk.Tk):
         ).grid(row=0, column=4, padx=(4, 12))
         ttk.Button(frame, text="Open Home Roster", command=lambda: self._open_game_roster("home")).grid(row=0, column=5, padx=3)
         ttk.Button(frame, text="Open Away Roster", command=lambda: self._open_game_roster("away")).grid(row=0, column=6, padx=3)
+        ttk.Button(frame, text="Load GSIS Roster", command=self.load_gsis_roster).grid(row=0, column=7, padx=3)
 
         ttk.Label(
             frame, textvariable=self.data_freshness_text, style="Status.TLabel",
-        ).grid(row=1, column=0, columnspan=7, sticky="w", pady=(6, 0))
+        ).grid(row=1, column=0, columnspan=8, sticky="w", pady=(6, 0))
 
     def _build_player_lookup(self) -> None:
         search_frame = ttk.Frame(self.player_page, padding=(0, 2, 0, 8))
@@ -932,7 +939,12 @@ class NFLStatsApp(tk.Tk):
         roster_label = "Roster"
         if not self.roster.empty and "roster_source" in self.roster.columns:
             sources = set(self.roster["roster_source"].dropna().astype(str))
-            if sources == {"NFL.com official"}:
+            if GSIS_ROSTER_SOURCE in sources:
+                # GSIS covers only the game's two teams, so say what else is mixed in.
+                others = sorted(sources - {GSIS_ROSTER_SOURCE})
+                roster_label = "Roster (GSIS official"
+                roster_label += f" + {others[0]})" if len(others) == 1 else ")"
+            elif sources == {"NFL.com official"}:
                 roster_label = "Roster (NFL.com)"
             elif "nflverse fallback" in sources:
                 roster_label = "Roster (NFL.com + fallback)"
@@ -1555,6 +1567,105 @@ class NFLStatsApp(tk.Tk):
         if text:
             self._copy_to_clipboard(text, "Copied graphic suggestions")
 
+    def load_gsis_roster(self) -> None:
+        """Overlay an official GSIS game roster onto the two teams in the matchup.
+
+        GSIS is the league's own system, so it outranks every other roster source
+        the app has. It only covers the one game, so the rest of the league keeps
+        whatever source it already had.
+        """
+        picked = filedialog.askopenfilename(
+            title="Select a GSIS ROSTER.xml (or a folder's newest one)",
+            initialdir=str(self._gsis_initial_dir()),
+            filetypes=[("GSIS roster", "ROSTER.xml *_ROSTER.xml"), ("XML files", "*.xml"),
+                       ("All files", "*.*")],
+        )
+        if not picked:
+            return
+        path = Path(picked)
+        # Picking any file inside a drop folder should still find the newest roster.
+        if path.is_dir():
+            candidates = find_gsis_roster_files(path)
+            if not candidates:
+                messagebox.showwarning(APP_TITLE, f"No ROSTER.xml found under:\n\n{path}")
+                return
+            path = candidates[0]
+
+        try:
+            gsis = parse_gsis_roster(path)
+        except Exception as error:
+            self.status_text.set(f"GSIS roster failed — {error}")
+            messagebox.showerror(APP_TITLE, f"Could not read that GSIS roster:\n\n{error}")
+            return
+
+        selected = set(self.get_game_team_codes())
+        if selected and not selected.intersection(gsis.teams):
+            # Loading a roster for a different game would silently swap out teams
+            # nobody is looking at, so make the mismatch a decision, not a surprise.
+            if not messagebox.askyesno(
+                APP_TITLE,
+                f"That roster is for {gsis.label}.\n\n"
+                f"Game Setup is currently {' at '.join(reversed(sorted(selected)))}.\n\n"
+                "Load it anyway?",
+            ):
+                return
+
+        try:
+            combined, report = apply_gsis_roster(self.roster, gsis)
+        except Exception as error:
+            self.status_text.set(f"GSIS roster failed — {error}")
+            messagebox.showerror(APP_TITLE, f"Could not apply that GSIS roster:\n\n{error}")
+            return
+
+        self.roster = combined
+        self.gsis_roster_label = gsis.label
+        self.show_selected_team()
+        self._refresh_call_sheet()
+        self._refresh_jersey_grid()
+        self._refresh_data_freshness()
+
+        notes = [f"{gsis.label}", f"File: {path.name}"]
+        notes.append(
+            "Loaded " + ", ".join(f"{team} {count}" for team, count in report["per_team"].items())
+            + f" ({report['replaced']} previous row(s) replaced)."
+        )
+        if report["status_counts"]:
+            notes.append(
+                "Game status (from that game, not tonight): "
+                + ", ".join(f"{label} {count}" for label, count in report["status_counts"].items())
+            )
+        if report["shared_numbers"]:
+            notes.append(
+                "GSIS resolved these shared numbers: "
+                + ", ".join(report["shared_numbers"])
+                + "  (D = defense, O = offense, S = specialist)"
+            )
+        if report["missing_player_id"]:
+            notes.append(
+                f"{report['missing_player_id']} player(s) had no GSIS id, so they will not "
+                "join to career stats."
+            )
+        if report["no_jersey"]:
+            notes.append(
+                f"{len(report['no_jersey'])} player(s) had no usable jersey number: "
+                + ", ".join(report["no_jersey"][:6])
+            )
+        notes.append(
+            "This roster covers only these two teams and is not saved to the database "
+            "files — Update All Data will replace it."
+        )
+        self.status_text.set(
+            f"GSIS roster loaded — {report['players']} players ({', '.join(report['teams'])})"
+        )
+        messagebox.showinfo(APP_TITLE, "\n\n".join(notes))
+
+    def _gsis_initial_dir(self) -> Path:
+        """Where to start looking for dropped GSIS files."""
+        for folder in (EXPORT_DIR / "gsis", APP_ROOT / "Tests" / "fixtures", EXPORT_DIR):
+            if folder.is_dir():
+                return folder
+        return APP_ROOT
+
     def build_font_sheet(self) -> None:
         """Write the GFX font sheet for the selected matchup and open it.
 
@@ -1862,6 +1973,11 @@ class NFLStatsApp(tk.Tk):
         values = []
         if status_code:
             values.append(ROSTER_STATUS_LABELS.get(status_code, status_code))
+        # GSIS statuses describe the game the roster came from, so they are
+        # labelled as such rather than read as tonight's availability.
+        gsis_code = clean(safe_get(player, "gsis_status")).upper()
+        if gsis_code:
+            values.append(f"GSIS last game: {gsis_status_label(gsis_code)}")
         for column in ("injury_status", "injury_body_part", "injury_notes"):
             value = clean(safe_get(player, column))
             if value and value.lower() not in {"none", "healthy", "active"}:
