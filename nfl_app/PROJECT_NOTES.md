@@ -38,6 +38,11 @@ Working Data Source
 
 nflreadpy.load_player_stats
 
+Current roster membership, jersey number, position, and status come from the
+official NFL.com team roster pages. nflreadpy/nflverse supplies GSIS IDs and
+biographical enrichment, and is used as a clearly labeled per-team fallback if
+an official page cannot be loaded or parsed safely.
+
 Tested signature:
 
 load_player_stats(

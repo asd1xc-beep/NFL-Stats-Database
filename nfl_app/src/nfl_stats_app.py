@@ -18,8 +18,8 @@ from broadcast_tools import (
 )
 from build_career_database import (
     CURRENT_SEASON, PRESEASON_SEASON, build_active_roster, build_preseason_totals,
-    build_team_history, build_totals, export_database, load_stats,
-    load_team_history_stats,
+    build_team_history, build_totals, export_database, get_last_roster_source,
+    get_last_roster_update_warning, load_stats, load_team_history_stats,
 )
 from font_sheet import write_font_sheet
 from call_sheet import (
@@ -926,24 +926,28 @@ class NFLStatsApp(tk.Tk):
         return tree
 
     def _refresh_data_freshness(self) -> None:
-        """Show each export's file mtime so staleness is visible at a glance.
-
-        nfl.load_rosters() is a periodic upstream snapshot, not a live feed. During
-        roster-cutdown periods it can lag real moves by hours, so the roster age is
-        called out explicitly before anyone trusts an "Active" tag on air.
-        """
+        """Show export mtimes and identify the source behind roster membership."""
         now = datetime.now()
         parts = []
-        for label, path in (
-            ("Roster", ROSTER_FILE), ("Career", CAREER_FILE),
-            ("Season", SEASON_FILE), ("Preseason", PRESEASON_FILE),
+        roster_label = "Roster"
+        if not self.roster.empty and "roster_source" in self.roster.columns:
+            sources = set(self.roster["roster_source"].dropna().astype(str))
+            if sources == {"NFL.com official"}:
+                roster_label = "Roster (NFL.com)"
+            elif "nflverse fallback" in sources:
+                roster_label = "Roster (NFL.com + fallback)"
+        for label, path, is_roster in (
+            (roster_label, ROSTER_FILE, True),
+            ("Career", CAREER_FILE, False),
+            ("Season", SEASON_FILE, False),
+            ("Preseason", PRESEASON_FILE, False),
         ):
             if not path.exists():
                 parts.append(f"{label}: MISSING")
                 continue
             stamp = datetime.fromtimestamp(path.stat().st_mtime)
             text = stamp.strftime("%b %d %I:%M %p")
-            if label == "Roster":
+            if is_roster:
                 hours = (now - stamp).total_seconds() / 3600
                 text += f" ({hours:.0f}h old)" if hours >= 1 else " (under 1h old)"
             parts.append(f"{label}: {text}")
@@ -964,6 +968,7 @@ class NFLStatsApp(tk.Tk):
                 pd.read_excel(CAREER_FILE), pd.read_excel(SEASON_FILE),
                 pd.read_excel(ROSTER_FILE), pd.read_excel(PRESEASON_FILE),
             )
+            self._refresh_data_freshness()
         except Exception as error:
             self.status_text.set("Could not load the databases.")
             messagebox.showerror(APP_TITLE, str(error))
@@ -1670,7 +1675,9 @@ class NFLStatsApp(tk.Tk):
 
     def update_all_data(self) -> None:
         self.update_button.configure(state="disabled")
-        self.status_text.set("Updating career, season, preseason, and roster data...")
+        self.status_text.set(
+            "Updating career, season, preseason, and official NFL.com roster data..."
+        )
         threading.Thread(target=self._update_all_data_worker, daemon=True).start()
 
     def _update_all_data_worker(self) -> None:
@@ -1696,7 +1703,10 @@ class NFLStatsApp(tk.Tk):
                 ),
                 SEASON_FILE.name,
             )
-            export_database(build_active_roster(), ROSTER_FILE.name)
+            roster = build_active_roster()
+            roster_warning = get_last_roster_update_warning()
+            roster_source = get_last_roster_source()
+            export_database(roster, ROSTER_FILE.name)
         except Exception as error:
             self.after(0, lambda error=error: self._finish_data_update(error=error))
             return
@@ -1717,11 +1727,18 @@ class NFLStatsApp(tk.Tk):
             return
         self.after(
             0,
-            lambda: self._finish_data_update(frames=frames, partial_error=preseason_error),
+            lambda: self._finish_data_update(
+                frames=frames,
+                partial_error=preseason_error,
+                roster_warning=roster_warning,
+                roster_source=roster_source,
+            ),
         )
 
     def _finish_data_update(self, frames=None, error: Exception | None = None,
-                            partial_error: Exception | None = None) -> None:
+                            partial_error: Exception | None = None,
+                            roster_warning: str = "",
+                            roster_source: str = "NFL.com official") -> None:
         self.update_button.configure(state="normal")
         if error is not None:
             self.status_text.set("Data update failed.")
@@ -1730,23 +1747,44 @@ class NFLStatsApp(tk.Tk):
         self._install_dataframes(*frames)
         self.show_selected_team()
         self._refresh_data_freshness()
+        warning_sections = []
+        status_warnings = []
+        if roster_warning:
+            status_warnings.append("ROSTER FALLBACK USED")
+            warning_sections.append(
+                "Roster source warning:\n\n"
+                f"{roster_warning}\n\n"
+                "Official NFL.com data was retained for every team that loaded; "
+                "only the named team(s) used the nflverse fallback."
+            )
         if partial_error is not None:
+            status_warnings.append("PRESEASON REFRESH FAILED")
+            warning_sections.append(
+                "The preseason file could NOT be refreshed:\n\n"
+                f"{type(partial_error).__name__}: {partial_error}\n\n"
+                f"{PRESEASON_FILE.name} still holds whatever it had before this update, "
+                "so preseason numbers may be missing or out of date."
+            )
+        if warning_sections:
             self.status_text.set(
-                f"Career, season, and roster updated — PRESEASON REFRESH FAILED "
-                f"({type(partial_error).__name__}: {partial_error})"
+                f"Data updated with warning(s) — {'; '.join(status_warnings)}"
             )
             messagebox.showwarning(
                 APP_TITLE,
-                "Career, season, and roster data updated successfully.\n\n"
-                f"The preseason file could NOT be refreshed:\n\n"
-                f"{type(partial_error).__name__}: {partial_error}\n\n"
-                f"{PRESEASON_FILE.name} still holds whatever it had before this update, "
-                "so preseason numbers may be missing or out of date. Everything else is "
-                "current — check the 'Data as of' line above.",
+                "The data update completed, with the warning(s) below.\n\n"
+                + "\n\n---\n\n".join(warning_sections)
+                + "\n\nCheck the 'Data as of' line before air.",
             )
             return
-        self.status_text.set(f"All data updated — {len(self.career):,} valid players, {len(self.roster):,} roster entries")
-        messagebox.showinfo(APP_TITLE, "Career, season, preseason, and roster data updated successfully.")
+        self.status_text.set(
+            f"All data updated — {len(self.career):,} valid players, "
+            f"{len(self.roster):,} official roster entries"
+        )
+        messagebox.showinfo(
+            APP_TITLE,
+            "Career, season, preseason, and roster data updated successfully.\n\n"
+            f"Roster source: {roster_source}",
+        )
 
     def _find_roster_player(self, player: pd.Series | None) -> pd.Series | None:
         if player is None or self.roster.empty:

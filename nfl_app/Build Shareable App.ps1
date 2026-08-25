@@ -22,6 +22,8 @@ Write-Host "Building the Windows application..."
     --collect-all pandas `
     --collect-all requests `
     --collect-all certifi `
+    --collect-all bs4 `
+    --collect-all soupsieve `
     --add-data "assets;assets" `
     --add-data "config;config" `
     --hidden-import openpyxl `

@@ -1,16 +1,24 @@
+from contextlib import contextmanager
 from pathlib import Path
 
 import nflreadpy as nfl
+from nflreadpy.config import get_config, update_config
 import polars as pl
 import requests
 
 from app_paths import EXPORT_DIR
+from broadcast_tools import TEAM_NAMES
+from official_rosters import (
+    build_hybrid_roster, load_official_rosters, reject_incomplete_team_pages,
+)
 
 CURRENT_SEASON = nfl.get_current_season()
 PRESEASON_SEASON = nfl.get_current_season(roster=True)
 CAREER_SEASONS = list(range(1999, CURRENT_SEASON + 1))
 OUTPUT_DIR = EXPORT_DIR
 PRESEASON_FILE = OUTPUT_DIR / "nfl_current_preseason_database.xlsx"
+LAST_ROSTER_UPDATE_WARNING = ""
+LAST_ROSTER_SOURCE = "nflverse"
 TEAM_ROSTER_STATUSES = {
     "ACT",  # Active roster
     "DEV",  # Practice squad/developmental
@@ -228,63 +236,82 @@ def export_database(database: pl.DataFrame, filename: str) -> None:
     print(f"Exported {database.height:,} players to {output_file}")
 
 
+def get_last_roster_update_warning() -> str:
+    return LAST_ROSTER_UPDATE_WARNING
+
+
+def get_last_roster_source() -> str:
+    return LAST_ROSTER_SOURCE
+
+
+@contextmanager
+def _fresh_nflreadpy_downloads():
+    """Temporarily bypass nflreadpy's 24-hour memory/filesystem cache."""
+    config = get_config()
+    original_duration = config.cache_duration
+    update_config(cache_duration=0)
+    try:
+        yield
+    finally:
+        update_config(cache_duration=original_duration)
+
+
 def build_active_roster() -> pl.DataFrame:
-    """Load all current team-controlled players and standardize roster fields."""
+    """Build current rosters with NFL.com truth and nflverse ID/bio enrichment."""
+    global LAST_ROSTER_SOURCE, LAST_ROSTER_UPDATE_WARNING
+
     roster_year = nfl.get_current_season(roster=True)
-    print(f"Loading current {roster_year} rosters...")
-    roster = nfl.load_rosters()
-
-    def first_column(*names: str) -> str:
-        for name in names:
-            if name in roster.columns:
-                return name
-        raise ValueError(f"Roster data is missing all expected columns: {', '.join(names)}")
-
-    team_column = first_column("team", "recent_team")
-    name_column = first_column("full_name", "player_name", "player_display_name", "football_name")
-    position_column = first_column("position", "depth_chart_position")
-    id_column = next((name for name in ("gsis_id", "player_id") if name in roster.columns), None)
-    jersey_column = next((name for name in ("jersey_number", "jersey") if name in roster.columns), None)
-    optional_roster_fields = {
-        "height": ("height",),
-        "weight": ("weight",),
-        "college": ("college",),
-        "years_experience": ("years_exp", "years_experience"),
-        "age": ("age",),
-        "birth_date": ("birth_date", "birthdate"),
-        "headshot_url": ("headshot_url",),
-        "depth_chart_position": ("depth_chart_position",),
-        "injury_status": ("injury_status",),
-        "injury_body_part": ("injury_body_part",),
-        "injury_notes": ("injury_notes",),
-        "rookie_year": ("rookie_year",),
-    }
-    available_optional_fields = {
-        target: next((source for source in sources if source in roster.columns), None)
-        for target, sources in optional_roster_fields.items()
-    }
-
-    if "status" in roster.columns:
-        roster = roster.filter(pl.col("status").is_in(TEAM_ROSTER_STATUSES))
-
-    return (
-        roster.select(
-            pl.col(team_column).alias("team"),
-            pl.col(name_column).alias("player_display_name"),
-            pl.col(position_column).alias("position"),
-            *([pl.col(id_column).alias("player_id")] if id_column else []),
-            *([pl.col(jersey_column).alias("jersey_number")] if jersey_column else []),
-            *([pl.col("status").alias("roster_status")] if "status" in roster.columns else []),
-            *[
-                pl.col(source).alias(target)
-                for target, source in available_optional_fields.items()
-                if source is not None
-            ],
-        )
-        .drop_nulls(subset=["team", "player_display_name", "position"])
-        .unique()
-        .sort(["team", "position", "player_display_name"])
+    print(f"Loading current {roster_year} official NFL.com rosters...")
+    official = reject_incomplete_team_pages(
+        load_official_rosters(), TEAM_ROSTER_STATUSES
     )
+    warnings = []
+
+    nflverse_roster = pl.DataFrame()
+    players = pl.DataFrame()
+    with _fresh_nflreadpy_downloads():
+        try:
+            print("Loading fresh nflverse roster data for fallback and bio enrichment...")
+            nflverse_roster = nfl.load_rosters()
+        except Exception as error:
+            warnings.append(
+                f"nflverse roster enrichment failed ({type(error).__name__}: {error})"
+            )
+        try:
+            print("Loading fresh nflverse player IDs and bio data...")
+            players = nfl.load_players()
+        except Exception as error:
+            warnings.append(
+                f"nflverse player-ID enrichment failed ({type(error).__name__}: {error})"
+            )
+
+    roster, unresolved_ids = build_hybrid_roster(
+        official, nflverse_roster, players, TEAM_ROSTER_STATUSES
+    )
+    fallback_teams = sorted(official.failures)
+    if fallback_teams:
+        warnings.append(
+            "NFL.com failed for " + ", ".join(fallback_teams)
+            + "; fresh nflverse fallback was used for those teams"
+        )
+    missing_teams = sorted(set(TEAM_NAMES).difference(roster["team"].unique().to_list()))
+    if missing_teams:
+        warnings.append("no roster rows were available for " + ", ".join(missing_teams))
+    if unresolved_ids:
+        warnings.append(
+            f"{unresolved_ids} official roster player(s) could not be matched to a GSIS ID"
+        )
+
+    LAST_ROSTER_UPDATE_WARNING = "; ".join(warnings)
+    LAST_ROSTER_SOURCE = (
+        "NFL.com official + nflverse fallback" if fallback_teams else "NFL.com official"
+    )
+    source_counts = roster.group_by("roster_source").len().sort("roster_source")
+    print(f"Official roster pages loaded: {len(official.successful_teams)}/32 teams.")
+    print(f"Roster source rows: {source_counts.to_dicts()}")
+    if LAST_ROSTER_UPDATE_WARNING:
+        print(f"WARNING: {LAST_ROSTER_UPDATE_WARNING}")
+    return roster
 
 
 def build_preseason_totals() -> pl.DataFrame:
