@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OPP / TB — NFL Preseason Week — — Font Sheet</title>
+<style>
+:root{
+  --bg:#0e1116; --panel:#161b23; --panel2:#1c222c; --line:#2a323f;
+  --ink:#e8edf4; --dim:#96a3b5; --our:#d50a0a; --opp:#006778;
+  --warn:#ffb020; --ok:#3ecf8e; --acc:#5aa9ff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1120px;margin:0 auto;padding:20px 16px 90px}
+header.top{border-radius:12px;padding:18px 20px;margin-bottom:16px}
+header.top h1{margin:0 0 6px;font-size:23px;letter-spacing:.3px}
+header.top .meta{font-size:14px;color:#f2f6fa;opacity:.95}
+header.top .meta b{color:#fff}
+h2{font-size:17px;margin:32px 0 10px;padding-bottom:7px;border-bottom:2px solid var(--line);
+  letter-spacing:.4px;text-transform:uppercase}
+h3{font-size:14px;margin:20px 0 8px;color:var(--dim);text-transform:uppercase;letter-spacing:.6px}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;
+  vertical-align:middle;letter-spacing:.4px;color:#fff}
+.tag.our{background:var(--our)} .tag.opp{background:var(--opp)}
+.note{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--acc);
+  border-radius:8px;padding:12px 14px;margin:12px 0;font-size:14px}
+.note.warn{border-left-color:var(--warn)} .note.ok{border-left-color:var(--ok)}
+.warn{color:var(--warn)}
+table{width:100%;border-collapse:collapse;margin:8px 0 4px;font-size:14px}
+th{text-align:left;background:var(--panel2);color:var(--dim);font-size:11px;text-transform:uppercase;
+  letter-spacing:.6px;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:hover td{background:#1a2029}
+td.num{font-weight:800;font-size:19px;width:56px;text-align:center;font-variant-numeric:tabular-nums;color:#fff}
+td.pos{width:56px;color:var(--dim);font-weight:700;font-size:12px}
+td.nm{width:200px;font-weight:600}
+td.code,th.code{width:178px}
+td.take,th.take{width:82px}
+td.take{font-family:ui-monospace,Menlo,monospace;font-weight:800;font-size:17px;color:#fff}
+.star{color:var(--warn)}
+tr.dupA td{border-bottom:none} tr.dupB td{background:#221a10}
+tr.gap td{color:var(--dim)} tr.stale td{background:#2a1a10}
+ul{margin:8px 0;padding-left:20px} li{margin:5px 0}
+li.dim{color:var(--dim);list-style:none;margin-left:-14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+@media(max-width:820px){.grid,.grid3{grid-template-columns:1fr}td.nm{width:auto}}
+.cc{display:inline-block;min-width:60px;padding:3px 7px;border:1px dashed #3a4655;border-radius:5px;
+  background:#11161d;color:var(--ok);font-weight:700;font-family:ui-monospace,Menlo,monospace;
+  font-size:13px;font-style:normal;outline:none;letter-spacing:.5px}
+.cc:focus{border-style:solid;border-color:var(--ok);background:#16211b}
+.cc.auto{color:var(--warn);border-color:#5c4a24}
+.cc.tbd{border-color:var(--warn);border-style:solid;background:#2a2113}
+.cc.tbd:empty::before{content:"TBD";color:var(--warn);font-weight:700}
+.derived{display:block;margin-top:5px;font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.9}
+.derived b{font-weight:800;margin-right:8px;padding:1px 4px;border-radius:4px;background:rgba(255,255,255,.06)}
+.d0{color:var(--dim)}
+.d1{color:#5aa9ff}.d2{color:#3ecf8e}.d3{color:#ffb020}.d4{color:#ff7a70}.d5{color:#b98cff}
+.basechip{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-weight:800;font-size:15px;
+  padding:2px 8px;border-radius:5px;background:#11161d;border:1px solid var(--line)}
+.basechip.auto{color:var(--warn);border-color:#5c4a24}
+.basechip.locked{color:var(--ok);border-color:#2c5c44}
+.mini{font-size:11px;color:var(--warn);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.mini.ok{color:var(--ok)}
+.tbd-txt{color:var(--warn);font-weight:700}
+.idx{columns:3;column-gap:22px;font-size:13px;font-variant-numeric:tabular-nums;margin-top:12px}
+@media(max-width:820px){.idx{columns:2}}
+.idx div{break-inside:avoid;padding:3px 0;border-bottom:1px solid #1e242e}
+.idx b{display:inline-block;min-width:30px;color:#fff}
+.idx b.dupe{color:var(--warn)}
+.idx span{color:var(--dim)}
+.idx .cc{min-width:48px;font-size:12px;padding:1px 5px;margin-left:6px}
+details{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:10px 0}
+summary{cursor:pointer;font-weight:700;font-size:14px}
+.content{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:#11161d;
+  border:1px solid var(--line);border-radius:5px;padding:4px 8px;display:inline-block;line-height:1.5}
+.content b{color:#fff;font-weight:700}
+#lookup{width:100%;max-width:360px;background:#11161d;color:var(--ink);border:2px solid var(--acc);
+  border-radius:8px;padding:11px 13px;font-size:17px;font-family:ui-monospace,Menlo,monospace}
+#lkout{margin-top:12px}
+.lkcard{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--acc);
+  border-radius:8px;padding:12px 14px;margin:8px 0}
+.lkcard.coach{border-left-color:#c9a227}
+.lkcard.coach.stale{border-left-color:var(--warn);background:#241a10}
+.lkcard.warncard{border-left-color:var(--warn)}
+.lkcard .who{font-size:16px;font-weight:700;margin-bottom:8px}
+.lkcard .who em{font-style:normal;color:var(--dim);font-weight:500;font-size:13px;margin-left:7px}
+.lkgrid{display:flex;gap:8px;flex-wrap:wrap}
+.lkgrid span{background:#0e1319;border:1px solid var(--line);border-radius:7px;padding:8px 12px;
+  font-family:ui-monospace,Menlo,monospace;font-size:20px;font-weight:800}
+.lkgrid span.take{color:#fff;font-size:22px}
+.lkgrid span.dimchip{color:var(--dim)}
+.lkgrid span i{display:block;font-style:normal;font-size:10px;color:var(--dim);
+  text-transform:uppercase;letter-spacing:.7px;font-weight:600;margin-top:2px}
+.lknote{font-size:12.5px;color:var(--dim);margin-top:9px;line-height:1.5}
+.lkmore{font-size:12px;color:var(--dim);padding:4px 2px}
+.badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;
+  padding:3px 8px;border-radius:5px;margin-left:8px;vertical-align:middle}
+.b-built{background:#1d4f36;color:#c8ffe4}
+.b-todo,.b-check{background:#5c3a10;color:#ffd9a3}
+.b-gap{background:#2a323f;color:#9fb0c4}
+.b-suggested{background:#1e3550;color:#bcd9ff}
+.keytab td,.keytab th{padding:7px 14px 7px 0}
+.keytab td:nth-child(2),.keytab td:nth-child(3){font-family:ui-monospace,Menlo,monospace;font-weight:800;font-size:17px}
+.btn{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:7px;
+  padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;margin:4px 6px 4px 0}
+.btn:hover{background:#28313d;border-color:var(--acc)}
+.btn.pri{background:#1d4f36;border-color:var(--ok);color:#c8ffe4}
+textarea{width:100%;min-height:150px;background:#11161d;color:var(--ink);border:1px solid var(--line);
+  border-radius:7px;padding:10px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+input.f{width:100%;background:#11161d;color:var(--ink);border:1px solid var(--line);
+  border-radius:6px;padding:8px 10px;font-size:13px;margin-bottom:8px}
+label{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:3px}
+#setup{border:1px solid #3a4655;border-radius:10px;padding:14px 16px;margin:26px 0;background:#12171f}
+#setupmsg{font-size:13px;margin-top:10px;min-height:18px}
+code{background:#222a35;padding:1px 5px;border-radius:4px;font-size:12px}
+.foot{margin-top:44px;padding-top:14px;border-top:1px solid var(--line);color:var(--dim);font-size:12px}
+@media print{
+  body{background:#fff;color:#000}
+  .cc{color:#000;border:1px solid #999;background:#fff}
+  .btn,#setup,#lookup,#lkout{display:none}
+  details{border:none} th{background:#eee;color:#000}
+  td,th{border-bottom:1px solid #ccc}
+  header.top{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+.nmhit{color:#fff}
+#near .pos{color:var(--dim);font-size:12px;font-weight:700}
+#near td{width:40%}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top" id="ghead" style="background: linear-gradient(90deg, rgb(213, 10, 10) 0%, rgb(26, 29, 34) 52%, rgb(51, 64, 79) 100%);">
+  <h1 id="gtitle">Tampa Bay Buccaneers vs OPPONENT</h1>
+  <div class="meta" id="gmeta">NFL Preseason Week — &nbsp;·&nbsp; <b>— set in Setup —</b> &nbsp;·&nbsp; —</div>
+</header>
+
+<div class="note warn" id="nojs">
+<b>Interactive features are off in this viewer.</b> Everything below — rosters, call codes, shared
+numbers, name traps — is fully readable. The <b>live lookup box</b> and the editable code fields need
+JavaScript, so open this file in Safari or Chrome to use those.
+</div>
+
+<div class="note warn" id="stalebanner" style="display:none">
+<b>Rosters were rebuilt, editorial was not.</b> The storylines and “players to have ready”
+tables below are still from the previous game. Jersey numbers, call codes, duplicates, name traps and
+the index are all current.
+</div>
+
+<div class="note ok" id="tldr"><b>Font coordinator TL;DR —</b> <b>This is the blank weekly template.</b> Open <b>Setup</b> at the bottom, paste the opponent roster (and a fresh Bucs roster if it has moved), fill in the game details, and hit <b>Rebuild rosters &amp; codes</b>. Everything mechanical — jersey index, base codes, shared-number detection, name traps — regenerates on its own. Storylines and the players-to-have-ready tables are editorial and stay empty until they're written.</div>
+
+<h2>Storylines the booth will hit</h2>
+<ul id="storylines"><li class="dim">Not written yet for this game.</li></ul>
+
+<h2>Call codes</h2>
+<div class="note ok">
+<b>Rule:</b> the call code is the player's jersey number, two digits, with the action prefix in front.
+<b>Our team is always 3 digits and the opponent is always 4</b> — this is a broadcast-side rule,
+not a home/away one, so it holds whether we're at home or on the road.
+Exceptions are only <b>#0</b> and shared numbers; those are listed below.
+</div>
+<h3>Prefix key</h3>
+<table class="keytab" id="prefixkey"><tbody><tr><th>Pulls</th><th class="d0">Tampa Bay Buccaneers</th><th class="d0">Opponent</th><th>Example (#7)</th></tr><tr><td><b class="d1">One-liner</b></td><td class="d1">1xx</td><td class="d1">11xx</td><td><code>107</code> TB / <code>1107</code> OPP</td></tr><tr><td><b class="d2">Bio</b></td><td class="d2">2xx</td><td class="d2">12xx</td><td><code>207</code> TB / <code>1207</code> OPP</td></tr><tr><td><b class="d3">Career</b></td><td class="d3">3xx</td><td class="d3">13xx</td><td><code>307</code> TB / <code>1307</code> OPP</td></tr><tr><td><b class="d4">Last szn</b></td><td class="d4">4xx</td><td class="d4">14xx</td><td><code>407</code> TB / <code>1407</code> OPP</td></tr><tr><td><b class="d5">Tonight</b></td><td class="d5">5xx</td><td class="d5">15xx</td><td><code>507</code> TB / <code>1507</code> OPP</td></tr></tbody></table>
+
+<h3>Live lookup</h3>
+<div style="font-size:13px;color:var(--dim);margin-bottom:8px">
+Players and coaches in one box. Try a jersey number, a name, a full code, a take ID, or a role like
+<code>oc</code> or <code>special teams</code>.</div>
+<input id="lookup" placeholder="jersey #, player, coach, code, or take ID…" autocomplete="off" spellcheck="false">
+<div id="lkout"></div>
+
+<div id="watchour"><h2><span class="tag our">TB</span> Tampa Bay Buccaneers — players to have ready</h2><div class="note">No players flagged for this team yet. The full jersey index below still has every player and every code.</div></div>
+<div id="watchopp"><h2><span class="tag opp">OPP</span> Opponent — players to have ready</h2><div class="note">No players flagged for this team yet. The full jersey index below still has every player and every code.</div></div>
+
+<h2 style="border-bottom-color:var(--warn)">⚠ Shared jersey numbers</h2>
+<div class="note warn">
+These are camp rosters, so numbers double up. If one of these hits the field, <b>confirm the position
+group before you pull the font.</b> Amber base codes were auto-assigned by this sheet from the unused
+numbers on that roster — <b>they are proposals, not gospel.</b> Confirm them with your op and
+type the real ones in; green means confirmed.
+</div>
+<div class="grid" id="dupes"><div><h3><span class="tag our">TB</span> 2 shared numbers</h3><table><tbody><tr><th>#</th><th>Player</th><th>Pos</th><th>Base code</th></tr><tr class="dupA"><td class="num">08</td><td class="nm">SirVocea Dennis</td><td class="pos">LB</td><td><span class="basechip locked">08</span> <span class="mini ok">confirmed</span></td></tr><tr class="dupB"><td class="num"></td><td class="nm">Dean Patterson IV</td><td class="pos">WR</td><td><span class="basechip locked">20</span> <span class="mini ok">confirmed</span></td></tr><tr class="dupA"><td class="num">71</td><td class="nm">Scott Daly</td><td class="pos">LS</td><td><span class="basechip locked">71</span> <span class="mini ok">confirmed</span></td></tr><tr class="dupB"><td class="num"></td><td class="nm">Travis Shaw</td><td class="pos">DL</td><td><span class="basechip auto">13</span> <span class="mini">auto — confirm</span></td></tr></tbody></table></div><div><h3><span class="tag opp">OPP</span> no shared numbers</h3></div></div>
+
+<div id="zerowrap">
+<h3>Players wearing #0</h3>
+<div class="note">Zero can't carry a prefix cleanly, so these need an alternate base code.</div>
+<table id="zero"><tbody><tr><th>#</th><th>Player</th><th>Pos</th><th>Team</th><th>Base code</th></tr><tr><td class="num">0</td><td class="nm">Yaya Diaby</td><td class="pos">OLB</td><td><span class="tag our">TB</span></td><td><span class="basechip locked">12</span> <span class="mini ok">confirmed</span></td></tr></tbody></table>
+</div>
+
+<h2 style="border-bottom-color:var(--warn)">⚠ Name traps</h2>
+
+<div id="nearwrap" style="display: none;">
+<h3 style="color:var(--warn)">Near-identical names</h3>
+<div class="note warn">Same surname, nearly the same first name. These are the ones that get pulled
+wrong under time pressure — read the jersey number, not the name.</div>
+<table id="near"><tbody><tr><th>Player</th><th>Player</th><th>Difference</th></tr></tbody></table>
+</div>
+
+<h3>Surnames appearing three or more times</h3>
+<ul id="bigclusters"><li><b>Williams</b> ×3: <span class="tag our">TB</span> #18 Josh Williams (RB), <span class="tag our">TB</span> #26 Xavier Williams (S), <span class="tag our">TB</span> #28 Damarion Williams (CB)</li></ul>
+<h3>Surnames appearing twice (<span id="twocount">3</span> total)</h3>
+<ul id="twoclusters"><li><b>Johnson</b> ×2: <span class="tag our">TB</span> #15 Tez Johnson (WR), <span class="tag our">TB</span> #19 Kameron Johnson (WR)</li><li><b>Scott</b> ×2: <span class="tag our">TB</span> #22 Keionte Scott (DB), <span class="tag our">TB</span> #66 Ben Scott (G)</li><li><b>Roberts</b> ×2: <span class="tag our">TB</span> #36 JJ Roberts (S), <span class="tag our">TB</span> #95 Elijah Roberts (DL)</li></ul>
+
+<h3>Character checks</h3>
+<div class="grid3">
+  <div><h3>Accents &amp; non-ASCII</h3><ul id="trapAccent"><li><span class="tag our">TB</span> <b>Rakeem Nuñez-Roches</b> — #56</li></ul></div>
+  <div><h3>Apostrophes</h3><ul id="trapApos"><li><span class="tag our">TB</span> <b>A'Shawn Robinson</b> — #91</li></ul></div>
+  <div><h3>Hyphens</h3><ul id="trapHyphen"><li><span class="tag our">TB</span> <b>Rakeem Nuñez-Roches</b> — #56</li><li><span class="tag our">TB</span> <b>Al-Quadin Muhammad</b> — #97</li></ul></div>
+</div>
+<div class="grid3">
+  <div><h3>Suffixes</h3><ul id="trapSuffix"><li><span class="tag our">TB</span> <b>Rueben Bain Jr.</b> — #3</li><li><span class="tag our">TB</span> <b>Dean Patterson IV</b> — #8</li><li><span class="tag our">TB</span> <b>Chris Godwin Jr.</b> — #14</li><li><span class="tag our">TB</span> <b>Ted Hurst III</b> — #17</li><li><span class="tag our">TB</span> <b>Antoine Winfield Jr.</b> — #31</li><li><span class="tag our">TB</span> <b>David Sills V</b> — #80</li><li><span class="tag our">TB</span> <b>Kenny Fletcher Jr.</b> — #81</li><li><span class="tag our">TB</span> <b>Eric Rivers Jr.</b> — #83</li></ul></div>
+  <div><h3>Internal capitals</h3><ul id="trapCaps"><li><span class="tag our">TB</span> <b>Chase McLaughlin</b> — #4</li><li><span class="tag our">TB</span> <b>SirVocea Dennis</b> — #8</li><li><span class="tag our">TB</span> <b>Jalen McMillan</b> — #11</li><li><span class="tag our">TB</span> <b>Ted Hurst III</b> — #17</li><li><span class="tag our">TB</span> <b>Zyon McCollum</b> — #27</li><li><span class="tag our">TB</span> <b>B.T. Potter</b> — #33</li><li><span class="tag our">TB</span> <b>Robert McDaniel</b> — #39</li><li><span class="tag our">TB</span> <b>Deshawn McKnight</b> — #73</li><li><span class="tag our">TB</span> <b>DeMonte Capehart</b> — #90</li></ul></div>
+  <div><h3>Long names (18+ chars)</h3><ul id="trapLong"><li><span class="tag our">TB</span> <b>Antoine Winfield Jr.</b> — #31</li><li><span class="tag our">TB</span> <b>Christian Rozeboom</b> — #52</li><li><span class="tag our">TB</span> <b>Rakeem Nuñez-Roches</b> — #56</li><li><span class="tag our">TB</span> <b>Kenny Fletcher Jr.</b> — #81</li><li><span class="tag our">TB</span> <b>Al-Quadin Muhammad</b> — #97</li></ul></div>
+</div>
+
+<div id="unavailwrap" style="display: none;">
+<h3 style="color:var(--warn)">Not available</h3>
+<div class="note warn">Still in the jersey index so a lookup finds them, but they are not expected to play.</div>
+<div class="grid" id="unavail"></div>
+</div>
+
+<h2>Full jersey index</h2>
+<div id="jindex"><details open=""><summary><span class="tag our">TB</span> Tampa Bay Buccaneers — 91 players</summary><div class="idx"><div><b>0</b> Yaya Diaby <span>OLB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Yaya Diaby" data-team="TB" data-num="0">12</i></div><div><b>1</b> Kenny Gainwell <span>RB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Kenny Gainwell" data-team="TB" data-num="1">01</i></div><div><b>2</b> Emeka Egbuka <span>WR</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Emeka Egbuka" data-team="TB" data-num="2">02</i></div><div><b>3</b> Rueben Bain Jr. <span>OLB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Rueben Bain Jr." data-team="TB" data-num="3">03</i></div><div><b>4</b> Chase McLaughlin <span>K</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Chase McLaughlin" data-team="TB" data-num="4">04</i></div><div><b>5</b> Jake Browning <span>QB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Jake Browning" data-team="TB" data-num="5">05</i></div><div><b>6</b> Baker Mayfield <span>QB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Baker Mayfield" data-team="TB" data-num="6">06</i></div><div><b>7</b> Bucky Irving <span>RB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Bucky Irving" data-team="TB" data-num="7">07</i></div><div><b class="dupe">8</b> Dean Patterson IV <span>WR</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Dean Patterson IV" data-team="TB" data-num="8">20</i></div><div><b class="dupe">8</b> SirVocea Dennis <span>LB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="SirVocea Dennis" data-team="TB" data-num="8">08</i></div><div><b>9</b> Riley Dixon <span>P</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Riley Dixon" data-team="TB" data-num="9">09</i></div><div><b>10</b> Jalon Daniels <span>QB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Jalon Daniels" data-team="TB" data-num="10">10</i></div><div><b>11</b> Jalen McMillan <span>WR</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Jalen McMillan" data-team="TB" data-num="11">11</i></div><div><b>14</b> Chris Godwin Jr. <span>WR</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Chris Godwin Jr." data-team="TB" data-num="14">14</i></div><div><b>15</b> Tez Johnson <span>WR</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Tez Johnson" data-team="TB" data-num="15">15</i></div><div><b>16</b> Connor Bazelak <span>QB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Connor Bazelak" data-team="TB" data-num="16">16</i></div><div><b>17</b> Ted Hurst III <span>WR</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Ted Hurst III" data-team="TB" data-num="17">17</i></div><div><b>18</b> Josh Williams <span>RB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Josh Williams" data-team="TB" data-num="18">18</i></div><div><b>19</b> Kameron Johnson <span>WR</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Kameron Johnson" data-team="TB" data-num="19">19</i></div><div><b>21</b> Benjamin Morrison <span>CB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Benjamin Morrison" data-team="TB" data-num="21">21</i></div><div><b>22</b> Keionte Scott <span>DB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Keionte Scott" data-team="TB" data-num="22">22</i></div><div><b>23</b> Tykee Smith <span>S</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Tykee Smith" data-team="TB" data-num="23">23</i></div><div><b>24</b> Ayden Garnes <span>CB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Ayden Garnes" data-team="TB" data-num="24">24</i></div><div><b>25</b> Jacob Parrish <span>CB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Jacob Parrish" data-team="TB" data-num="25">25</i></div><div><b>26</b> Xavier Williams <span>S</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Xavier Williams" data-team="TB" data-num="26">26</i></div><div><b>27</b> Zyon McCollum <span>CB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Zyon McCollum" data-team="TB" data-num="27">27</i></div><div><b>28</b> Damarion Williams <span>CB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Damarion Williams" data-team="TB" data-num="28">28</i></div><div><b>29</b> Miles Killebrew <span>S</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Miles Killebrew" data-team="TB" data-num="29">29</i></div><div><b>30</b> John Bullock <span>LB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="John Bullock" data-team="TB" data-num="30">30</i></div><div><b>31</b> Antoine Winfield Jr. <span>S</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Antoine Winfield Jr." data-team="TB" data-num="31">31</i></div><div><b>32</b> Josh Hayes <span>CB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Josh Hayes" data-team="TB" data-num="32">32</i></div><div><b>33</b> B.T. Potter <span>K</span><i class="cc" contenteditable="true" spellcheck="false" data-name="B.T. Potter" data-team="TB" data-num="33">33</i></div><div><b>34</b> Alex Anzalone <span>LB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Alex Anzalone" data-team="TB" data-num="34">34</i></div><div><b>35</b> Ifeatu Melifonwu <span>S</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Ifeatu Melifonwu" data-team="TB" data-num="35">35</i></div><div><b>36</b> JJ Roberts <span>S</span><i class="cc" contenteditable="true" spellcheck="false" data-name="JJ Roberts" data-team="TB" data-num="36">36</i></div><div><b>37</b> Roman Parodie <span>CB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Roman Parodie" data-team="TB" data-num="37">37</i></div><div><b>38</b> Rashad Wisdom <span>S</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Rashad Wisdom" data-team="TB" data-num="38">38</i></div><div><b>39</b> Robert McDaniel <span>S</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Robert McDaniel" data-team="TB" data-num="39">39</i></div><div><b>41</b> Ko Kieft <span>TE</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Ko Kieft" data-team="TB" data-num="41">41</i></div><div><b>43</b> Chris Braswell <span>OLB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Chris Braswell" data-team="TB" data-num="43">43</i></div><div><b>44</b> Sean Tucker <span>RB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Sean Tucker" data-team="TB" data-num="44">44</i></div><div><b>45</b> Josiah Trotter <span>LB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Josiah Trotter" data-team="TB" data-num="45">45</i></div><div><b>46</b> Caden Fordham <span>LB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Caden Fordham" data-team="TB" data-num="46">46</i></div><div><b>48</b> Javin Wright <span>LB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Javin Wright" data-team="TB" data-num="48">48</i></div><div><b>49</b> Barika Kpeenu <span>RB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Barika Kpeenu" data-team="TB" data-num="49">49</i></div><div><b>50</b> Vita Vea <span>NT</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Vita Vea" data-team="TB" data-num="50">50</i></div><div><b>51</b> David Walker <span>OLB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="David Walker" data-team="TB" data-num="51">51</i></div><div><b>52</b> Christian Rozeboom <span>LB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Christian Rozeboom" data-team="TB" data-num="52">52</i></div><div><b>53</b> Nick Jackson <span>LB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Nick Jackson" data-team="TB" data-num="53">53</i></div><div><b>56</b> Rakeem Nuñez-Roches <span>DL</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Rakeem Nuñez-Roches" data-team="TB" data-num="56">56</i></div><div><b>57</b> Yasir Holmes <span>OLB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Yasir Holmes" data-team="TB" data-num="57">57</i></div><div><b>58</b> Jack Pyburn <span>OLB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Jack Pyburn" data-team="TB" data-num="58">58</i></div><div><b>59</b> Mohamed Kamara <span>OLB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Mohamed Kamara" data-team="TB" data-num="59">59</i></div><div><b>61</b> Henry Lutovsky <span>G</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Henry Lutovsky" data-team="TB" data-num="61">61</i></div><div><b>62</b> Graham Barton <span>C</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Graham Barton" data-team="TB" data-num="62">62</i></div><div><b>64</b> Nash Hutmacher <span>G</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Nash Hutmacher" data-team="TB" data-num="64">64</i></div><div><b>65</b> Dan Feeney <span>G</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Dan Feeney" data-team="TB" data-num="65">65</i></div><div><b>66</b> Ben Scott <span>G</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Ben Scott" data-team="TB" data-num="66">66</i></div><div><b>67</b> Luke Goedeke <span>T</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Luke Goedeke" data-team="TB" data-num="67">67</i></div><div><b>68</b> Ben Bredeson <span>G</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Ben Bredeson" data-team="TB" data-num="68">68</i></div><div><b>69</b> Cody Mauch <span>G</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Cody Mauch" data-team="TB" data-num="69">69</i></div><div><b>70</b> Benjamin Chukwuma <span>T</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Benjamin Chukwuma" data-team="TB" data-num="70">70</i></div><div><b class="dupe">71</b> Scott Daly <span>LS</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Scott Daly" data-team="TB" data-num="71">71</i></div><div><b class="dupe">71</b> Travis Shaw <span>DL</span><i class="cc auto" contenteditable="true" spellcheck="false" data-name="Travis Shaw" data-team="TB" data-num="71">13</i></div><div><b>72</b> Luke Haggard <span>G</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Luke Haggard" data-team="TB" data-num="72">72</i></div><div><b>73</b> Deshawn McKnight <span>DL</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Deshawn McKnight" data-team="TB" data-num="73">73</i></div><div><b>74</b> Marshall Foerner <span>T</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Marshall Foerner" data-team="TB" data-num="74">74</i></div><div><b>75</b> Billy Schrauth <span>G</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Billy Schrauth" data-team="TB" data-num="75">75</i></div><div><b>76</b> Paul Rubelt <span>T</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Paul Rubelt" data-team="TB" data-num="76">76</i></div><div><b>77</b> Justin Skule <span>T</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Justin Skule" data-team="TB" data-num="77">77</i></div><div><b>78</b> Tristan Wirfs <span>T</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Tristan Wirfs" data-team="TB" data-num="78">78</i></div><div><b>79</b> Elijah Klein <span>G</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Elijah Klein" data-team="TB" data-num="79">79</i></div><div><b>80</b> David Sills V <span>WR</span><i class="cc" contenteditable="true" spellcheck="false" data-name="David Sills V" data-team="TB" data-num="80">80</i></div><div><b>81</b> Kenny Fletcher Jr. <span>TE</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Kenny Fletcher Jr." data-team="TB" data-num="81">81</i></div><div><b>82</b> Devin Culp <span>TE</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Devin Culp" data-team="TB" data-num="82">82</i></div><div><b>83</b> Eric Rivers Jr. <span>WR</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Eric Rivers Jr." data-team="TB" data-num="83">83</i></div><div><b>84</b> Bauer Sharp <span>TE</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Bauer Sharp" data-team="TB" data-num="84">84</i></div><div><b>85</b> Garrett Greene <span>WR</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Garrett Greene" data-team="TB" data-num="85">85</i></div><div><b>86</b> Evan Deckers <span>LS</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Evan Deckers" data-team="TB" data-num="86">86</i></div><div><b>87</b> Payne Durham <span>TE</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Payne Durham" data-team="TB" data-num="87">87</i></div><div><b>88</b> Cade Otton <span>TE</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Cade Otton" data-team="TB" data-num="88">88</i></div><div><b>89</b> Dennis Houston <span>WR</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Dennis Houston" data-team="TB" data-num="89">89</i></div><div><b>90</b> DeMonte Capehart <span>DL</span><i class="cc" contenteditable="true" spellcheck="false" data-name="DeMonte Capehart" data-team="TB" data-num="90">90</i></div><div><b>91</b> A'Shawn Robinson <span>DL</span><i class="cc" contenteditable="true" spellcheck="false" data-name="A'Shawn Robinson" data-team="TB" data-num="91">91</i></div><div><b>92</b> Elijah Simmons <span>DL</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Elijah Simmons" data-team="TB" data-num="92">92</i></div><div><b>93</b> Jayson Jones <span>DL</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Jayson Jones" data-team="TB" data-num="93">93</i></div><div><b>94</b> Calijah Kancey <span>DL</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Calijah Kancey" data-team="TB" data-num="94">94</i></div><div><b>95</b> Elijah Roberts <span>DL</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Elijah Roberts" data-team="TB" data-num="95">95</i></div><div><b>96</b> Josiah Green <span>DL</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Josiah Green" data-team="TB" data-num="96">96</i></div><div><b>97</b> Al-Quadin Muhammad <span>OLB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Al-Quadin Muhammad" data-team="TB" data-num="97">97</i></div><div><b>98</b> Anthony Nelson <span>OLB</span><i class="cc" contenteditable="true" spellcheck="false" data-name="Anthony Nelson" data-team="TB" data-num="98">98</i></div></div></details><details open=""><summary><span class="tag opp">OPP</span> Opponent — no roster loaded</summary><div class="idx"></div></details></div>
+
+<h2>Coaches — page 2800</h2>
+<h3>Our staff</h3>
+<table id="coachOur"><tbody><tr><th class="take">Take</th><th>Content string</th><th>Note</th></tr><tr class="built"><td class="take">2801</td><td><span class="content"><b>TODD BOWLES</b> | TAMPA BAY HEAD COACH</span></td><td>Calls the defense himself — no separate Bucs DC card</td></tr><tr class="built"><td class="take">2802</td><td><span class="content"><b>ZAC ROBINSON</b> | OFFENSIVE COORDINATOR</span></td><td></td></tr><tr class="built"><td class="take">2803</td><td><span class="content"><b>TODD BOWLES</b> | 4 SEASONS AT TAMPA BAY: 36-36</span></td><td>Stat card — update the record as the season moves</td></tr><tr class="built"><td class="take">2804</td><td><span class="content"><b>MARCUS WEST</b> | DEFENSIVE LINE COACH</span></td><td></td></tr><tr class="built"><td class="take">2805</td><td><span class="content"><b>LARRY FOOTE</b> | LINEBACKERS COACH</span></td><td>Full title is Run Game Coordinator / Outside Linebackers</td></tr><tr class="built"><td class="take">2806</td><td><span class="content"><b>DANNY SMITH</b> | SPECIAL TEAMS COORDINATOR</span></td><td></td></tr><tr class="built"><td class="take">2807</td><td><span class="content"><b>CHANDLER WHITMER</b> | QUARTERBACKS COACH</span></td><td></td></tr><tr class="built"><td class="take">2808</td><td><span class="content"><b>KEVIN CARBERRY</b> | OFFENSIVE LINE COACH</span></td><td>Full title is Run Game Coordinator / Offensive Line</td></tr><tr class="built"><td class="take">2809</td><td><span class="content"><b>BRYAN MCCLENDON</b> | WIDE RECEIVERS COACH</span></td><td>Internal cap — McCLENDON</td></tr><tr class="built"><td class="take">2816</td><td><span class="content"><b>JASON LICHT</b> | TAMPA BAY GENERAL MANAGER</span></td><td>Front office. Sits after the opponent block</td></tr></tbody></table>
+<h3>Opponent staff</h3>
+<table id="coachOpp"><tbody><tr><th class="take">Take</th><th>Content string</th><th>Note</th></tr><tr class="stale"><td class="take">2810</td><td><span class="content"><b class="blankslot">[ NAME ]</b> | OPPONENT HEAD COACH</span></td><td>Retype every week — this block carries the last opponent's names</td></tr><tr class="stale"><td class="take">2811</td><td><span class="content"><b class="blankslot">[ NAME ]</b> | OFFENSIVE COORDINATOR</span></td><td>Retype every week</td></tr><tr class="stale"><td class="take">2812</td><td><span class="content"><b class="blankslot">[ NAME ]</b> | DEFENSIVE COORDINATOR</span></td><td>Retype every week</td></tr><tr class="stale"><td class="take">2813</td><td><span class="content"><b class="blankslot">[ NAME ]</b> | SPECIAL TEAMS COORDINATOR</span></td><td>Retype every week</td></tr><tr class="stale"><td class="take">2814</td><td><span class="content"><b class="blankslot">[ NAME ]</b> | LINEBACKERS COACH</span></td><td>Retype every week</td></tr><tr class="stale"><td class="take">2815</td><td><span class="content"><b class="blankslot">[ NAME ]</b> | QUARTERBACKS COACH</span></td><td>Retype every week</td></tr></tbody></table>
+<h3>Suggested stat cards</h3>
+<table id="coachSug"><tbody><tr><th class="take">Team</th><th>Suggested content</th><th>Why</th></tr><tr class="built"><td class="take"><span class="tag our">TB</span></td><td><span class="content"><b>ZAC ROBINSON</b> | 1ST SEASON AS BUCS OC</span></td><td>Pairs with 2802</td></tr></tbody></table>
+<h3>On staff, no card built</h3>
+<table id="coachGap"><tbody><tr><th class="take">Team</th><th>Content string</th><th>Note</th></tr><tr class="gap"><td class="take"><span class="tag our">TB</span></td><td><span class="content"><b>SKIP PEETE</b> | RUNNING BACKS COACH</span></td><td>On staff, no card built</td></tr><tr class="gap"><td class="take"><span class="tag our">TB</span></td><td><span class="content"><b>JUSTIN PEELLE</b> | TIGHT ENDS COACH</span></td><td>On staff, no card built</td></tr><tr class="gap"><td class="take"><span class="tag our">TB</span></td><td><span class="content"><b>MIKE CALDWELL</b> | INSIDE LINEBACKERS COACH</span></td><td>On staff, no card built</td></tr><tr class="gap"><td class="take"><span class="tag our">TB</span></td><td><span class="content"><b>RASHAD JOHNSON</b> | CORNERBACKS COACH</span></td><td>On staff, no card built</td></tr><tr class="gap"><td class="take"><span class="tag our">TB</span></td><td><span class="content"><b>TIM ATKINS</b> | SAFETIES COACH</span></td><td>On staff, no card built</td></tr><tr class="gap"><td class="take"><span class="tag our">TB</span></td><td><span class="content"><b>T.J. YATES</b> | PASS GAME COORDINATOR</span></td><td>On staff, no card built</td></tr><tr class="gap"><td class="take"><span class="tag our">TB</span></td><td><span class="content"><b>GEORGE EDWARDS</b> | PASS GAME COORDINATOR</span></td><td>On staff, no card built</td></tr></tbody></table>
+
+<h2>Pregame checklist</h2>
+<ul>
+<li>Re-pull both rosters Friday night and again at inactives — camp rosters churn daily.</li>
+<li>Confirm every <b>amber</b> base code with your op, then type it in so it turns green.</li>
+<li>Check your font renders every character in the traps section above.</li>
+<li>Retype the opponent coach takes and verify nothing carried over from the last opponent.</li>
+<li>Hit <b>Save this sheet</b> in setup before you close the tab — it bakes in everything you typed.</li>
+</ul>
+
+<div id="setup">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div><b>Setup — reuse this sheet next week</b>
+      <div style="font-size:12.5px;color:var(--dim);margin-top:3px">
+        Paste rosters, rebuild the codes, save a new file. Nothing to install.</div></div>
+    <button class="btn" id="btnToggle">Hide setup</button>
+  </div>
+  <div id="setupbody" style="margin-top:14px">
+    <div class="note">
+      <b>How to use it.</b> Copy the opponent's roster table straight off their team site and paste it
+      below — the parser pulls number, name and position out of most layouts. Rebuilding
+      regenerates the jersey index, base codes, duplicate detection and name traps. It does
+      <b>not</b> write storylines or the “players to have ready” tables; those stay from the
+      previous game and get an amber banner until you replace them.
+    </div>
+    <div class="grid">
+      <div>
+        <label>Opponent roster — paste here</label>
+        <textarea id="pasteOpp" placeholder="12 Travis Hunter WR
+16 Trevor Lawrence QB
+..."></textarea>
+      </div>
+      <div>
+        <label>Our roster — paste here (optional, to refresh)</label>
+        <textarea id="pasteOur" placeholder="Leave blank to keep the current roster"></textarea>
+      </div>
+    </div>
+    <div class="grid3" style="margin-top:12px">
+      <div><label>Opponent abbreviation</label><input class="f" id="oppAbbr" placeholder="JAX"></div>
+      <div><label>Opponent full name</label><input class="f" id="oppName" placeholder="Jacksonville Jaguars"></div>
+      <div><label>Game title</label><input class="f" id="gTitle" placeholder="Tampa Bay Buccaneers at ..."></div>
+    </div>
+    <div class="grid3">
+      <div><label>Week</label><input class="f" id="gWeek" placeholder="NFL Preseason Week 3"></div>
+      <div><label>Date / kickoff</label><input class="f" id="gDate" placeholder="Fri. Aug 28, 2026 — 7:30p ET"></div>
+      <div><label>Venue</label><input class="f" id="gVenue" placeholder="EverBank Stadium"></div>
+    </div>
+    <div><label>Broadcast</label><input class="f" id="gCast" placeholder="Channel / crew"></div>
+    <div>
+      <button class="btn pri" id="btnParse">Rebuild rosters &amp; codes</button>
+      <button class="btn" id="btnSave">Save this sheet as a new file</button>
+      <button class="btn" id="btnExport">Export codes as text</button>
+    </div>
+    <div id="setupmsg"></div>
+  </div>
+</div>
+
+<div class="foot">Weekly template. The Bucs roster loaded here is a starting point from Aug 25, 2026 — re-paste it on gameday. Amber base codes are proposals from this sheet and need confirming with your op; green means confirmed. Career and season stat lines come from the Font Cord. app.</div>
+</div>
+
+<script id="sheetdata" type="application/json" data-sig="4e3269ba">{"game": {"title": "Tampa Bay Buccaneers vs OPPONENT", "week": "NFL Preseason Week —", "date": "— set in Setup —", "venue": "—", "broadcast": "", "booth": "", "ourTeam": "TB", "ourName": "Tampa Bay Buccaneers", "oppTeam": "OPP", "oppName": "Opponent", "ourColor": "#d50a0a", "oppColor": "#33404f", "tldr": "<b>This is the blank weekly template.<\/b> Open <b>Setup<\/b> at the bottom, paste the opponent roster (and a fresh Bucs roster if it has moved), fill in the game details, and hit <b>Rebuild rosters &amp; codes<\/b>. Everything mechanical — jersey index, base codes, shared-number detection, name traps — regenerates on its own. Storylines and the players-to-have-ready tables are editorial and stay empty until they're written."}, "storylines": [], "watch": {"TB": [], "OPP": []}, "rosters": {"TB": [{"n": "0", "nm": "Yaya Diaby", "p": "OLB"}, {"n": "1", "nm": "Kenny Gainwell", "p": "RB"}, {"n": "2", "nm": "Emeka Egbuka", "p": "WR"}, {"n": "3", "nm": "Rueben Bain Jr.", "p": "OLB"}, {"n": "4", "nm": "Chase McLaughlin", "p": "K"}, {"n": "5", "nm": "Jake Browning", "p": "QB"}, {"n": "6", "nm": "Baker Mayfield", "p": "QB"}, {"n": "7", "nm": "Bucky Irving", "p": "RB"}, {"n": "8", "nm": "SirVocea Dennis", "p": "LB"}, {"n": "8", "nm": "Dean Patterson IV", "p": "WR"}, {"n": "9", "nm": "Riley Dixon", "p": "P"}, {"n": "10", "nm": "Jalon Daniels", "p": "QB"}, {"n": "11", "nm": "Jalen McMillan", "p": "WR"}, {"n": "14", "nm": "Chris Godwin Jr.", "p": "WR"}, {"n": "15", "nm": "Tez Johnson", "p": "WR"}, {"n": "16", "nm": "Connor Bazelak", "p": "QB"}, {"n": "17", "nm": "Ted Hurst III", "p": "WR"}, {"n": "18", "nm": "Josh Williams", "p": "RB"}, {"n": "19", "nm": "Kameron Johnson", "p": "WR"}, {"n": "21", "nm": "Benjamin Morrison", "p": "CB"}, {"n": "22", "nm": "Keionte Scott", "p": "DB"}, {"n": "23", "nm": "Tykee Smith", "p": "S"}, {"n": "24", "nm": "Ayden Garnes", "p": "CB"}, {"n": "25", "nm": "Jacob Parrish", "p": "CB"}, {"n": "26", "nm": "Xavier Williams", "p": "S"}, {"n": "27", "nm": "Zyon McCollum", "p": "CB"}, {"n": "28", "nm": "Damarion Williams", "p": "CB"}, {"n": "29", "nm": "Miles Killebrew", "p": "S"}, {"n": "30", "nm": "John Bullock", "p": "LB"}, {"n": "31", "nm": "Antoine Winfield Jr.", "p": "S"}, {"n": "32", "nm": "Josh Hayes", "p": "CB"}, {"n": "33", "nm": "B.T. Potter", "p": "K"}, {"n": "34", "nm": "Alex Anzalone", "p": "LB"}, {"n": "35", "nm": "Ifeatu Melifonwu", "p": "S"}, {"n": "36", "nm": "JJ Roberts", "p": "S"}, {"n": "37", "nm": "Roman Parodie", "p": "CB"}, {"n": "38", "nm": "Rashad Wisdom", "p": "S"}, {"n": "39", "nm": "Robert McDaniel", "p": "S"}, {"n": "41", "nm": "Ko Kieft", "p": "TE"}, {"n": "43", "nm": "Chris Braswell", "p": "OLB"}, {"n": "44", "nm": "Sean Tucker", "p": "RB"}, {"n": "45", "nm": "Josiah Trotter", "p": "LB"}, {"n": "46", "nm": "Caden Fordham", "p": "LB"}, {"n": "48", "nm": "Javin Wright", "p": "LB"}, {"n": "49", "nm": "Barika Kpeenu", "p": "RB"}, {"n": "50", "nm": "Vita Vea", "p": "NT"}, {"n": "51", "nm": "David Walker", "p": "OLB"}, {"n": "52", "nm": "Christian Rozeboom", "p": "LB"}, {"n": "53", "nm": "Nick Jackson", "p": "LB"}, {"n": "56", "nm": "Rakeem Nuñez-Roches", "p": "DL"}, {"n": "57", "nm": "Yasir Holmes", "p": "OLB"}, {"n": "58", "nm": "Jack Pyburn", "p": "OLB"}, {"n": "59", "nm": "Mohamed Kamara", "p": "OLB"}, {"n": "61", "nm": "Henry Lutovsky", "p": "G"}, {"n": "62", "nm": "Graham Barton", "p": "C"}, {"n": "64", "nm": "Nash Hutmacher", "p": "G"}, {"n": "65", "nm": "Dan Feeney", "p": "G"}, {"n": "66", "nm": "Ben Scott", "p": "G"}, {"n": "67", "nm": "Luke Goedeke", "p": "T"}, {"n": "68", "nm": "Ben Bredeson", "p": "G"}, {"n": "69", "nm": "Cody Mauch", "p": "G"}, {"n": "70", "nm": "Benjamin Chukwuma", "p": "T"}, {"n": "71", "nm": "Scott Daly", "p": "LS"}, {"n": "71", "nm": "Travis Shaw", "p": "DL"}, {"n": "72", "nm": "Luke Haggard", "p": "G"}, {"n": "73", "nm": "Deshawn McKnight", "p": "DL"}, {"n": "74", "nm": "Marshall Foerner", "p": "T"}, {"n": "75", "nm": "Billy Schrauth", "p": "G"}, {"n": "76", "nm": "Paul Rubelt", "p": "T"}, {"n": "77", "nm": "Justin Skule", "p": "T"}, {"n": "78", "nm": "Tristan Wirfs", "p": "T"}, {"n": "79", "nm": "Elijah Klein", "p": "G"}, {"n": "80", "nm": "David Sills V", "p": "WR"}, {"n": "81", "nm": "Kenny Fletcher Jr.", "p": "TE"}, {"n": "82", "nm": "Devin Culp", "p": "TE"}, {"n": "83", "nm": "Eric Rivers Jr.", "p": "WR"}, {"n": "84", "nm": "Bauer Sharp", "p": "TE"}, {"n": "85", "nm": "Garrett Greene", "p": "WR"}, {"n": "86", "nm": "Evan Deckers", "p": "LS"}, {"n": "87", "nm": "Payne Durham", "p": "TE"}, {"n": "88", "nm": "Cade Otton", "p": "TE"}, {"n": "89", "nm": "Dennis Houston", "p": "WR"}, {"n": "90", "nm": "DeMonte Capehart", "p": "DL"}, {"n": "91", "nm": "A'Shawn Robinson", "p": "DL"}, {"n": "92", "nm": "Elijah Simmons", "p": "DL"}, {"n": "93", "nm": "Jayson Jones", "p": "DL"}, {"n": "94", "nm": "Calijah Kancey", "p": "DL"}, {"n": "95", "nm": "Elijah Roberts", "p": "DL"}, {"n": "96", "nm": "Josiah Green", "p": "DL"}, {"n": "97", "nm": "Al-Quadin Muhammad", "p": "OLB"}, {"n": "98", "nm": "Anthony Nelson", "p": "OLB"}], "OPP": []}, "overrides": {"Yaya Diaby": "12", "SirVocea Dennis": "08", "Dean Patterson IV": "20", "Scott Daly": "71"}, "coaches": [{"t": "2801", "n": "Todd Bowles", "r": "Tampa Bay Head Coach", "tm": "TB", "st": "built", "note": "Calls the defense himself — no separate Bucs DC card"}, {"t": "2802", "n": "Zac Robinson", "r": "Offensive Coordinator", "tm": "TB", "st": "built", "note": ""}, {"t": "2803", "n": "Todd Bowles", "r": "4 seasons at tampa bay: 36-36", "tm": "TB", "st": "built", "note": "Stat card — update the record as the season moves"}, {"t": "2804", "n": "Marcus West", "r": "Defensive Line Coach", "tm": "TB", "st": "built", "note": ""}, {"t": "2805", "n": "Larry Foote", "r": "Linebackers Coach", "tm": "TB", "st": "built", "note": "Full title is Run Game Coordinator / Outside Linebackers"}, {"t": "2806", "n": "Danny Smith", "r": "Special Teams Coordinator", "tm": "TB", "st": "built", "note": ""}, {"t": "2807", "n": "Chandler Whitmer", "r": "Quarterbacks Coach", "tm": "TB", "st": "built", "note": ""}, {"t": "2808", "n": "Kevin Carberry", "r": "Offensive Line Coach", "tm": "TB", "st": "built", "note": "Full title is Run Game Coordinator / Offensive Line"}, {"t": "2809", "n": "Bryan McClendon", "r": "Wide Receivers Coach", "tm": "TB", "st": "built", "note": "Internal cap — McCLENDON"}, {"t": "2816", "n": "Jason Licht", "r": "Tampa Bay General Manager", "tm": "TB", "st": "built", "note": "Front office. Sits after the opponent block"}, {"t": "2810", "n": "", "r": "Opponent Head Coach", "tm": "OPP", "st": "todo", "note": "Retype every week — this block carries the last opponent's names"}, {"t": "2811", "n": "", "r": "Offensive Coordinator", "tm": "OPP", "st": "todo", "note": "Retype every week"}, {"t": "2812", "n": "", "r": "Defensive Coordinator", "tm": "OPP", "st": "todo", "note": "Retype every week"}, {"t": "2813", "n": "", "r": "Special Teams Coordinator", "tm": "OPP", "st": "todo", "note": "Retype every week"}, {"t": "2814", "n": "", "r": "Linebackers Coach", "tm": "OPP", "st": "todo", "note": "Retype every week"}, {"t": "2815", "n": "", "r": "Quarterbacks Coach", "tm": "OPP", "st": "todo", "note": "Retype every week"}, {"t": "", "n": "Skip Peete", "r": "Running Backs Coach", "tm": "TB", "st": "gap", "note": "On staff, no card built"}, {"t": "", "n": "Justin Peelle", "r": "Tight Ends Coach", "tm": "TB", "st": "gap", "note": "On staff, no card built"}, {"t": "", "n": "Mike Caldwell", "r": "Inside Linebackers Coach", "tm": "TB", "st": "gap", "note": "On staff, no card built"}, {"t": "", "n": "Rashad Johnson", "r": "Cornerbacks Coach", "tm": "TB", "st": "gap", "note": "On staff, no card built"}, {"t": "", "n": "Tim Atkins", "r": "Safeties Coach", "tm": "TB", "st": "gap", "note": "On staff, no card built"}, {"t": "", "n": "T.J. Yates", "r": "Pass Game Coordinator", "tm": "TB", "st": "gap", "note": "On staff, no card built"}, {"t": "", "n": "George Edwards", "r": "Pass Game Coordinator", "tm": "TB", "st": "gap", "note": "On staff, no card built"}, {"t": "", "n": "Zac Robinson", "r": "1st season as Bucs OC", "tm": "TB", "st": "suggested", "note": "Pairs with 2802"}], "prefixes": [["1", "One-liner"], ["2", "Bio"], ["3", "Career"], ["4", "Last szn"], ["5", "Tonight"]], "editorialStale": false}</script>
+<script>/* ============================================================
+   FONT SHEET ENGINE — renders the whole page from #sheetdata
+   ============================================================ */
+(function(){
+"use strict";
+
+function fnv1a(str){
+  var h = 0x811c9dc5;
+  for (var i = 0; i < str.length; i++){
+    h ^= str.charCodeAt(i);
+    h = (h + ((h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24))) >>> 0;
+  }
+  return ('0000000'+h.toString(16)).slice(-8);
+}
+function damaged(headline, detail){
+  document.body.innerHTML =
+    '<div style="max-width:760px;margin:60px auto;padding:24px;border:2px solid #ffb020;'+
+    'border-radius:10px;background:#2a1a10;color:#e8edf4;font:15px/1.6 -apple-system,Segoe UI,Roboto,sans-serif">'+
+    '<h2 style="margin:0 0 10px;color:#ffb020">'+headline+'</h2>'+
+    '<p>This copy of the sheet does not match the one that was built. '+
+    '<b>Do not use it on air.</b> Go back to a known-good copy.</p>'+
+    '<p style="color:#96a3b5;font-size:13px">'+detail+'</p></div>';
+}
+var D, __raw = document.getElementById('sheetdata').textContent;
+try {
+  D = JSON.parse(__raw);
+} catch (err) {
+  damaged('This file is damaged', 'The roster data block did not parse. Parser said: '+String(err && err.message));
+  throw err;
+}
+(function(){
+  var want = document.getElementById('sheetdata').getAttribute('data-sig');
+  if(!want) return;                                   // unsigned copy — skip the check
+  var got = fnv1a(__raw);
+  if(got !== want){
+    damaged('Integrity check failed',
+      'The roster data does not match its signature (expected '+want+', got '+got+'). '+
+      'Something altered this file after it was built — a jersey number or a name may be wrong.');
+    throw new Error('sheetdata signature mismatch');
+  }
+})();
+var $  = function(s){return document.querySelector(s);};
+var el = function(id){return document.getElementById(id);};
+
+/* ---------- helpers ---------- */
+function norm(x){return (x||'').toLowerCase().replace(/[^a-z0-9]/g,'');}
+function pad(v){v=String(v||'').replace(/\D/g,'');return v?v.padStart(2,'0'):'';}
+function esc(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function isOpp(t){return t !== D.game.ourTeam;}
+function pre(t){return isOpp(t) ? '1' : '';}     // opponent codes get the leading 1
+var SUFFIX = /^(jr|sr|ii|iii|iv|v)\.?$/i;
+
+/* ---------- code assignment ---------- */
+var CODES = {};   // "TEAM|Name" -> {base, flag}
+function keyOf(t,n){return t+'|'+n;}
+
+function assignCodes(){
+  CODES = {};
+  Object.keys(D.rosters).forEach(function(team){
+    var roster = D.rosters[team] || [];
+    var used = {};                                   // numbers already spoken for
+    roster.forEach(function(p){ used[pad(p.n)] = true; });
+    var taken = {};                                  // bases handed out this pass
+    var byNum = {};
+    roster.forEach(function(p){ (byNum[pad(p.n)] = byNum[pad(p.n)] || []).push(p); });
+
+    // pass 1 — explicit overrides win
+    roster.forEach(function(p){
+      var ov = D.overrides[p.nm];
+      if(ov){ CODES[keyOf(team,p.nm)] = {base:pad(ov), flag:'locked'}; taken[pad(ov)] = true; }
+    });
+
+    function freeNum(){
+      for(var i=1;i<100;i++){ var c=pad(i); if(!used[c] && !taken[c]) return c; }
+      return '';
+    }
+
+    // pass 2 — #0 first (so it gets a low number), then everything else
+    var order = Object.keys(byNum).sort(function(a,b){
+      if(a==='00') return -1; if(b==='00') return 1; return (+a)-(+b);
+    });
+    order.forEach(function(num){
+      var group = byNum[num].filter(function(p){ return !CODES[keyOf(team,p.nm)]; });
+      if(!group.length) return;
+      var numFree = (num !== '00') && !taken[num];
+      group.forEach(function(p,i){
+        if(i===0 && numFree){
+          CODES[keyOf(team,p.nm)] = {base:num, flag:'plain'};
+          taken[num] = true;
+        } else {
+          var f = freeNum();
+          CODES[keyOf(team,p.nm)] = {base:f, flag:'auto'};
+          if(f) taken[f] = true;
+        }
+      });
+    });
+  });
+}
+function codeOf(team,name){ return CODES[keyOf(team,name)] || {base:'',flag:'none'}; }
+
+/* ---------- derived analysis ---------- */
+function duplicates(team){
+  var byNum = {}, out = [];
+  (D.rosters[team]||[]).forEach(function(p){ (byNum[pad(p.n)] = byNum[pad(p.n)]||[]).push(p); });
+  Object.keys(byNum).sort().forEach(function(n){
+    if(byNum[n].length > 1) out.push({num:n, players:byNum[n]});
+  });
+  return out;
+}
+function nameParts(nm){
+  var t = nm.replace(/\./g,'').split(/\s+/);
+  while(t.length > 1 && SUFFIX.test(t[t.length-1])) t.pop();
+  return t;
+}
+function clusters(which){        // 'last' or 'first'
+  var m = {};
+  Object.keys(D.rosters).forEach(function(team){
+    (D.rosters[team]||[]).forEach(function(p){
+      var t = nameParts(p.nm);
+      var k = (which==='last' ? t[t.length-1] : t[0]).toLowerCase();
+      (m[k] = m[k]||[]).push({team:team, p:p});
+    });
+  });
+  return Object.keys(m).filter(function(k){return m[k].length > 1;})
+    .map(function(k){return {key:k, list:m[k]};})
+    .sort(function(a,b){return b.list.length - a.list.length;});
+}
+function lev(a,b){
+  if(a===b) return 0;
+  var m=a.length,n=b.length,prev=[],cur=[],i,j;
+  for(j=0;j<=n;j++) prev[j]=j;
+  for(i=1;i<=m;i++){
+    cur[0]=i;
+    for(j=1;j<=n;j++){
+      cur[j]=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    }
+    prev=cur.slice();
+  }
+  return prev[n];
+}
+function nearNames(){
+  var all=[];
+  Object.keys(D.rosters).forEach(function(team){
+    (D.rosters[team]||[]).forEach(function(p){
+      var t=nameParts(p.nm);
+      all.push({team:team, p:p,
+                first:t[0].toLowerCase().replace(/[^a-z]/g,''),
+                last:t[t.length-1].toLowerCase().replace(/[^a-z]/g,'')});
+    });
+  });
+  var out=[];
+  for(var i=0;i<all.length;i++) for(var j=i+1;j<all.length;j++){
+    var A=all[i], B=all[j];
+    if(A.last!==B.last) continue;
+    if(A.first===B.first) continue;                      // same name entirely — not this check
+    var d=lev(A.first,B.first);
+    var pfx = A.first.indexOf(B.first)===0 || B.first.indexOf(A.first)===0;
+    if(d<=2 || pfx) out.push({a:A,b:B,d:d,pfx:pfx});
+  }
+  return out.sort(function(x,y){return x.d-y.d;});
+}
+function traps(){
+  var r = {accent:[], apos:[], hyphen:[], suffix:[], caps:[], long:[]};
+  Object.keys(D.rosters).forEach(function(team){
+    (D.rosters[team]||[]).forEach(function(p){
+      var e = {team:team, p:p};
+      if(/[^\x00-\x7F]/.test(p.nm)) r.accent.push(e);
+      if(/'/.test(p.nm)) r.apos.push(e);
+      if(/-/.test(p.nm)) r.hyphen.push(e);
+      if(p.nm.split(/\s+/).some(function(w){return SUFFIX.test(w);})) r.suffix.push(e);
+      if(p.nm.split(/[\s'-]/).some(function(w){return /^.+[A-Z]/.test(w.slice(1)) && /^[A-Z]/.test(w);}))
+        r.caps.push(e);
+      if(p.nm.length >= 18) r.long.push(e);
+    });
+  });
+  return r;
+}
+
+/* ---------- render ---------- */
+function tagFor(t){
+  return '<span class="tag '+(isOpp(t)?'opp':'our')+'">'+esc(t)+'</span>';
+}
+function codeStrip(team,name){
+  var c = codeOf(team,name); if(!c.base) return '<span class="tbd-txt">TBD</span>';
+  var p = pre(team);
+  return D.prefixes.map(function(x,i){
+    return '<b class="d'+(i+1)+'" title="'+esc(x[1])+'">'+p+x[0]+c.base+'</b>';}).join('');
+}
+
+function renderHeader(){
+  var g = D.game;
+  el('gtitle').textContent = g.title;
+  el('gmeta').innerHTML = esc(g.week)+' &nbsp;·&nbsp; <b>'+esc(g.date)+'</b> &nbsp;·&nbsp; '+
+    esc(g.venue) + (g.broadcast?' &nbsp;·&nbsp; '+esc(g.broadcast):'') +
+    (g.booth?' &nbsp;·&nbsp; Booth: <b>'+esc(g.booth)+'</b>':'');
+  el('ghead').style.background =
+    'linear-gradient(90deg,'+g.ourColor+' 0%, #1a1d22 52%, '+g.oppColor+' 100%)';
+  el('tldr').innerHTML = '<b>Font coordinator TL;DR &mdash;</b> ' + g.tldr;
+  document.title = g.oppTeam+' / '+g.ourTeam+' — '+g.week+' — Font Sheet';
+}
+
+function renderStorylines(){
+  el('storylines').innerHTML = D.storylines.length
+    ? D.storylines.map(function(s){return '<li><b>'+esc(s[0])+'</b> '+s[1]+'</li>';}).join('')
+    : '<li class="dim">Not written yet for this game.</li>';
+}
+
+function renderPrefixKey(){
+  var g=D.game, rows = D.prefixes.map(function(x,i){
+    var c='d'+(i+1);
+    return '<tr><td><b class="'+c+'">'+esc(x[1])+'</b></td>'+
+      '<td class="'+c+'">'+x[0]+'xx</td><td class="'+c+'">1'+x[0]+'xx</td>'+
+      '<td><code>'+x[0]+'07</code> '+esc(g.ourTeam)+' / <code>1'+x[0]+'07</code> '+esc(g.oppTeam)+'</td></tr>';
+  }).join('');
+  el('prefixkey').innerHTML =
+    '<tr><th>Pulls</th><th class="d0">'+esc(g.ourName)+'</th>'+
+    '<th class="d0">'+esc(g.oppName)+'</th><th>Example (#7)</th></tr>'+rows;
+}
+
+function watchTable(team){
+  var list = D.watch[team] || [];
+  if(!list.length) return '<div class="note">No players flagged for this team yet. '+
+    'The full jersey index below still has every player and every code.</div>';
+  return '<table><tr><th>#</th><th>Player</th><th>Pos</th><th class="code">Call codes</th>'+
+    '<th>Why you\'ll need him</th></tr>' + list.map(function(w){
+    var c = codeOf(team,w[1]);
+    return '<tr><td class="num">'+esc(w[0])+'</td><td class="nm">'+esc(w[1])+
+      (w[4]?' <span class="star">&#9733;</span>':'')+'</td><td class="pos">'+esc(w[2])+'</td>'+
+      '<td class="code"><i class="cc'+(c.base?'':' tbd')+'" contenteditable="true" spellcheck="false" '+
+        'data-name="'+esc(w[1])+'" data-team="'+esc(team)+'" data-num="'+esc(w[0])+'">'+esc(c.base)+'</i>'+
+      '<span class="derived">'+codeStrip(team,w[1])+'</span></td>'+
+      '<td>'+w[3]+'</td></tr>';
+  }).join('') + '</table>';
+}
+
+function renderWatch(){
+  var g=D.game;
+  el('watchour').innerHTML = '<h2>'+tagFor(g.ourTeam)+' '+esc(g.ourName)+
+    ' &mdash; players to have ready</h2>' + watchTable(g.ourTeam);
+  el('watchopp').innerHTML = '<h2>'+tagFor(g.oppTeam)+' '+esc(g.oppName)+
+    ' &mdash; players to have ready</h2>' + watchTable(g.oppTeam);
+}
+
+function renderDupes(){
+  var html='';
+  [D.game.ourTeam, D.game.oppTeam].forEach(function(team){
+    var d = duplicates(team);
+    html += '<div><h3>'+tagFor(team)+' '+(d.length?d.length+' shared number'+(d.length>1?'s':''):'no shared numbers')+'</h3>';
+    if(d.length){
+      html += '<table><tr><th>#</th><th>Player</th><th>Pos</th><th>Base code</th></tr>';
+      d.forEach(function(g){
+        g.players.forEach(function(p,i){
+          var c = codeOf(team,p.nm);
+          html += '<tr class="'+(i?'dupB':'dupA')+'"><td class="num">'+(i?'':esc(g.num))+'</td>'+
+            '<td class="nm">'+esc(p.nm)+'</td><td class="pos">'+esc(p.p)+'</td>'+
+            '<td><span class="basechip '+c.flag+'">'+esc(c.base||'—')+'</span>'+
+            (c.flag==='auto'?' <span class="mini">auto — confirm</span>':'')+
+            (c.flag==='locked'?' <span class="mini ok">confirmed</span>':'')+'</td></tr>';
+        });
+      });
+      html += '</table>';
+    }
+    html += '</div>';
+  });
+  el('dupes').innerHTML = html;
+}
+
+function renderZero(){
+  var rows=[];
+  Object.keys(D.rosters).forEach(function(team){
+    (D.rosters[team]||[]).forEach(function(p){
+      if(pad(p.n)==='00'){
+        var c=codeOf(team,p.nm);
+        rows.push('<tr><td class="num">0</td><td class="nm">'+esc(p.nm)+'</td><td class="pos">'+esc(p.p)+
+          '</td><td>'+tagFor(team)+'</td><td><span class="basechip '+c.flag+'">'+esc(c.base||'—')+'</span> '+
+          '<span class="mini'+(c.flag==='locked'?' ok':'')+'">'+
+          (c.flag==='locked'?'confirmed':'auto — confirm')+'</span></td></tr>');
+      }
+    });
+  });
+  el('zerowrap').style.display = rows.length ? '' : 'none';
+  el('zero').innerHTML = rows.length ?
+    '<tr><th>#</th><th>Player</th><th>Pos</th><th>Team</th><th>Base code</th></tr>'+rows.join('') : '';
+}
+
+function renderClusters(){
+  var last = clusters('last').filter(function(c){return c.list.length>=2;});
+  var big  = last.filter(function(c){return c.list.length>=3;});
+  var two  = last.filter(function(c){return c.list.length===2;});
+  function line(c){
+    return '<li><b>'+esc(c.key.charAt(0).toUpperCase()+c.key.slice(1))+'</b> &times;'+c.list.length+': '+
+      c.list.map(function(x){return tagFor(x.team)+' #'+esc(x.p.n)+' '+esc(x.p.nm)+' ('+esc(x.p.p)+')';}).join(', ')+'</li>';
+  }
+  el('bigclusters').innerHTML = big.length ? big.map(line).join('') :
+    '<li>No surname appears three or more times across the two rosters.</li>';
+  el('twoclusters').innerHTML = two.length ? two.slice(0,22).map(line).join('')
+    : '<li class="dim">none</li>';
+  el('twocount').textContent = two.length;
+}
+
+function renderNear(){
+  var n = nearNames();
+  el('nearwrap').style.display = n.length ? '' : 'none';
+  if(!n.length) return;
+  el('near').innerHTML = '<tr><th>Player</th><th>Player</th><th>Difference</th></tr>' + n.map(function(x){
+    return '<tr><td>'+tagFor(x.a.team)+' <b class="nmhit">#'+esc(x.a.p.n)+' '+esc(x.a.p.nm)+
+      '</b> <span class="pos">'+esc(x.a.p.p)+'</span></td>'+
+      '<td>'+tagFor(x.b.team)+' <b class="nmhit">#'+esc(x.b.p.n)+' '+esc(x.b.p.nm)+
+      '</b> <span class="pos">'+esc(x.b.p.p)+'</span></td>'+
+      '<td>'+(x.d===1?'one letter apart':(x.pfx&&x.d>2?'one first name contains the other':x.d+' letters apart'))+'</td></tr>';
+  }).join('');
+}
+function renderTraps(){
+  var t = traps();
+  function block(list){
+    if(!list.length) return '<li class="dim">none</li>';
+    return list.map(function(e){
+      return '<li>'+tagFor(e.team)+' <b>'+esc(e.p.nm)+'</b> &mdash; #'+esc(e.p.n)+'</li>';}).join('');
+  }
+  el('trapAccent').innerHTML = block(t.accent);
+  el('trapApos').innerHTML   = block(t.apos);
+  el('trapHyphen').innerHTML = block(t.hyphen);
+  el('trapSuffix').innerHTML = block(t.suffix);
+  el('trapCaps').innerHTML   = block(t.caps);
+  el('trapLong').innerHTML   = block(t.long);
+}
+
+function renderUnavail(){
+  var U = D.unavailable || {};
+  var teams = Object.keys(U).filter(function(t){return (U[t]||[]).length;});
+  el('unavailwrap').style.display = teams.length ? '' : 'none';
+  if(!teams.length) return;
+  el('unavail').innerHTML = teams.map(function(t){
+    return '<div><h3>'+tagFor(t)+'</h3><ul>'+U[t].map(function(x){
+      return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';}).join('');
+}
+function renderIndex(){
+  var g=D.game, html='';
+  [g.ourTeam, g.oppTeam].forEach(function(team){
+    var roster = (D.rosters[team]||[]).slice().sort(function(a,b){
+      return (+a.n)-(+b.n) || a.nm.localeCompare(b.nm);});
+    var dupNums = {}; duplicates(team).forEach(function(d){dupNums[d.num]=true;});
+    html += '<details open><summary>'+tagFor(team)+' '+esc(team===g.ourTeam?g.ourName:g.oppName)+
+      ' &mdash; '+(roster.length?roster.length+' players':'no roster loaded')+
+      '</summary><div class="idx">' +
+      roster.map(function(p){
+        var c=codeOf(team,p.nm);
+        return '<div><b'+(dupNums[pad(p.n)]?' class="dupe"':'')+'>'+esc(p.n)+'</b> '+esc(p.nm)+
+          ' <span>'+esc(p.p)+'</span><i class="cc'+(c.flag==='auto'?' auto':'')+(c.base?'':' tbd')+
+          '" contenteditable="true" spellcheck="false" data-name="'+esc(p.nm)+'" data-team="'+esc(team)+
+          '" data-num="'+esc(p.n)+'">'+esc(c.base)+'</i></div>';
+      }).join('') + '</div></details>';
+  });
+  el('jindex').innerHTML = html;
+}
+
+var STLBL={built:'Built',todo:'Needs typing',check:'Confirm the name',
+           gap:'Not built',suggested:'Suggested build'};
+function renderCoaches(){
+  var g=D.game;
+  function rows(f){
+    return D.coaches.filter(f).map(function(c){
+      var cls = c.st==='gap'?'gap':(c.st==='todo'||c.st==='check'?'stale':'built');
+      return '<tr class="'+cls+'"><td class="take">'+(c.t?esc(c.t):tagFor(c.tm))+'</td>'+
+        '<td><span class="content">'+(c.n?'<b>'+esc(c.n.toUpperCase())+'</b>'
+            :'<b class="blankslot">[ NAME ]</b>')+' | '+esc(c.r.toUpperCase())+'</span></td>'+
+        '<td>'+esc(c.note||'')+'</td></tr>';
+    }).join('');
+  }
+  el('coachOur').innerHTML = '<tr><th class="take">Take</th><th>Content string</th><th>Note</th></tr>'+
+    rows(function(c){return c.tm===g.ourTeam && c.t && c.st!=='suggested';});
+  el('coachOpp').innerHTML = '<tr><th class="take">Take</th><th>Content string</th><th>Note</th></tr>'+
+    rows(function(c){return c.tm===g.oppTeam && c.t;});
+  el('coachGap').innerHTML = '<tr><th class="take">Team</th><th>Content string</th><th>Note</th></tr>'+
+    rows(function(c){return c.st==='gap';});
+  el('coachSug').innerHTML = '<tr><th class="take">Team</th><th>Suggested content</th><th>Why</th></tr>'+
+    rows(function(c){return c.st==='suggested';});
+}
+
+/* ---------- editable code cells ---------- */
+function wireCells(){
+  var cells = [].slice.call(document.querySelectorAll('.cc'));
+  function repaint(c){
+    var strip = c.parentElement.querySelector('.derived');
+    if(!strip) return;
+    var b=pad(c.textContent), p=pre(c.dataset.team);
+    strip.innerHTML = b ? D.prefixes.map(function(x,i){
+      return '<b class="d'+(i+1)+'" title="'+esc(x[1])+'">'+p+x[0]+b+'</b>';}).join('') : '';
+  }
+  cells.forEach(function(c){
+    repaint(c);
+    c.addEventListener('input', function(){
+      var v=c.textContent.trim(), k=keyOf(c.dataset.team,c.dataset.name);
+      CODES[k]={base:pad(v),flag:'locked'};
+      if(v) D.overrides[c.dataset.name]=pad(v);
+      cells.forEach(function(o){
+        if(o!==c && o.dataset.team===c.dataset.team && o.dataset.name===c.dataset.name){
+          o.textContent=v; o.classList.remove('auto'); o.classList.toggle('tbd',!v); repaint(o);
+        }
+      });
+      c.classList.remove('auto'); c.classList.toggle('tbd',!v); repaint(c);
+    });
+    c.addEventListener('blur', function(){
+      var v=pad(c.textContent);
+      if(v && v!==c.textContent.trim()){ c.textContent=v; c.dispatchEvent(new Event('input')); }
+    });
+    c.addEventListener('keydown', function(e){ if(e.key==='Enter'){e.preventDefault(); c.blur();} });
+    c.addEventListener('paste', function(e){
+      e.preventDefault();
+      document.execCommand('insertText',false,
+        (e.clipboardData||window.clipboardData).getData('text').replace(/\s+/g,'').trim());
+    });
+  });
+}
+
+/* ---------- lookup ---------- */
+var PLAYERS=[], ROLEALIAS={hc:'head coach',oc:'offensive coordinator',dc:'defensive coordinator',
+  st:'special teams',qb:'quarterbacks',ol:'offensive line',dl:'defensive line',wr:'wide receivers',
+  rb:'running backs',te:'tight ends',lb:'linebackers',cb:'cornerbacks',gm:'general manager'};
+
+function buildPlayerIndex(){
+  PLAYERS=[];
+  Object.keys(D.rosters).forEach(function(team){
+    (D.rosters[team]||[]).forEach(function(p){ PLAYERS.push({team:team,num:p.n,name:p.nm,pos:p.p}); });
+  });
+}
+function playerCard(p){
+  var c=codeOf(p.team,p.name), pfx=pre(p.team);
+  var chips = c.base ? D.prefixes.map(function(x,i){
+      return '<span class="d'+(i+1)+'">'+pfx+x[0]+c.base+'<i>'+esc(x[1])+'</i></span>';}).join('')
+    : '<span class="warn">TBD<i>no code yet</i></span>';
+  return '<div class="lkcard"><div class="who">'+tagFor(p.team)+' #'+esc(p.num)+' '+esc(p.name)+
+    '<em>'+esc(p.pos)+'</em>'+(c.flag==='auto'?'<span class="badge b-todo">auto code — confirm</span>':'')+
+    '</div><div class="lkgrid">'+chips+'</div></div>';
+}
+function coachCard(c){
+  return '<div class="lkcard coach'+(c.st==='todo'||c.st==='check'?' stale':'')+'">'+
+    '<div class="who">'+tagFor(c.tm)+' '+esc(c.n)+'<em>'+esc(c.r)+'</em>'+
+    '<span class="badge b-'+c.st+'">'+esc(STLBL[c.st]||c.st)+'</span></div>'+
+    '<div class="lkgrid">'+(c.t?'<span class="take">'+esc(c.t)+'<i>take id</i></span>'
+      :'<span class="dimchip">&mdash;<i>no take yet</i></span>')+'</div>'+
+    (c.note?'<div class="lknote">'+esc(c.note)+'</div>':'')+'</div>';
+}
+function wireLookup(){
+  var out=el('lkout');
+  el('lookup').addEventListener('input', function(e){
+    var q=e.target.value.trim(); if(!q){out.innerHTML=''; return;}
+    var nq=norm(q), ph=[], ch=[], isRole=false;
+    if(/^\d+$/.test(q)){
+      ch = D.coaches.filter(function(c){return c.t && (c.t===q || (q.length>=3 && c.t.indexOf(q)===0));});
+      if(/^1[1-5]\d{2}$/.test(q)){
+        var ab=q.slice(2);
+        ph = PLAYERS.filter(function(p){return isOpp(p.team) && codeOf(p.team,p.name).base===ab;});
+      } else if(/^[1-5]\d{2}$/.test(q)){
+        var hb=q.slice(1);
+        ph = PLAYERS.filter(function(p){return !isOpp(p.team) && codeOf(p.team,p.name).base===hb;});
+      } else {
+        ph = PLAYERS.filter(function(p){return p.num===q || codeOf(p.team,p.name).base===pad(q);});
+      }
+    } else {
+      var alias=ROLEALIAS[q.toLowerCase()]; isRole=!!alias;
+      ch = D.coaches.filter(function(c){
+        return (!isRole && norm(c.n).indexOf(nq)>-1) || norm(c.r).indexOf(norm(alias||q))>-1;});
+      if(!isRole) ph = PLAYERS.filter(function(p){return norm(p.name).indexOf(nq)>-1;});
+    }
+    var h = ph.slice(0,8).map(playerCard).join('') + ch.slice(0,8).map(coachCard).join('');
+    var extra = Math.max(0,ph.length-8)+Math.max(0,ch.length-8);
+    if(extra) h += '<div class="lkmore">+'+extra+' more &mdash; keep typing to narrow.</div>';
+    out.innerHTML = h || '<div class="lkcard warncard">No match.</div>';
+  });
+}
+
+/* ---------- roster paste parsing ---------- */
+var POS = /^(QB|RB|FB|HB|WR|TE|OL|OT|OG|C|G|T|DL|DT|DE|NT|EDGE|LB|ILB|OLB|MLB|DB|CB|S|FS|SS|K|P|LS|ATH|WR\/CB|CB\/WR|DB\/WR)$/i;
+var NUMTOK  = /^#?\d{1,2}$/;
+var NAMETOK = /^[A-Za-z][A-Za-z.'À-ɏ-]*$/;   // letters, periods, apostrophes, accents, hyphens
+
+function parseRoster(text){
+  var out=[], skipped=[];
+  text.split(/\r?\n/).forEach(function(line){
+    var raw=line.trim();
+    if(!raw) return;
+    // header rows and section labels
+    if(/^(name|player|no\.?|#|jersey|pos|position|roster|active|reserve)\b/i.test(raw) && !/\d/.test(raw)){
+      return;
+    }
+    var toks = raw.split(/\t+|\s{2,}|\s/).filter(Boolean);
+    var num=null, pos=null, nameToks=[], i=0;
+
+    if(NUMTOK.test(toks[0])){                       // "12 Travis Hunter WR ..."
+      num = toks[0].replace('#','');
+      for(i=1;i<toks.length;i++){
+        var t=toks[i];
+        if(POS.test(t)){ pos=t.toUpperCase(); break; }
+        if(NUMTOK.test(t) || !NAMETOK.test(t)) break;   // hit height/weight/age — stop the name
+        nameToks.push(t);
+      }
+    } else {                                        // "Travis Hunter 12 WR 6-0 185 ..."
+      for(i=0;i<toks.length;i++){
+        var t2=toks[i];
+        if(NUMTOK.test(t2) || POS.test(t2) || !NAMETOK.test(t2)) break;
+        nameToks.push(t2);
+      }
+      for(var j=i;j<toks.length;j++){
+        if(num===null && NUMTOK.test(toks[j])) { num=toks[j].replace('#',''); continue; }
+        if(pos===null && POS.test(toks[j]))    { pos=toks[j].toUpperCase(); }
+      }
+    }
+    if(pos===null){                                 // position may sit past the break
+      for(var k=0;k<toks.length;k++){ if(POS.test(toks[k])){ pos=toks[k].toUpperCase(); break; } }
+    }
+    var nm = nameToks.join(' ').replace(/[,;]+$/,'').trim();
+    if(num!==null && nm && /[A-Za-z]{2}/.test(nm)) out.push({n:String(+num), nm:nm, p:pos||'—'});
+    else skipped.push(raw);
+  });
+  // drop exact duplicate rows (some sites repeat a player in two tables)
+  var seen={}, dedup=[];
+  out.forEach(function(p){
+    var k=p.n+'|'+p.nm.toLowerCase();
+    if(!seen[k]){ seen[k]=1; dedup.push(p); }
+  });
+  return {players:dedup, skipped:skipped};
+}
+
+/* ---------- setup panel ---------- */
+function wireSetup(){
+  el('btnParse').addEventListener('click', function(){
+    var oppTxt = el('pasteOpp').value.trim();
+    var ourTxt = el('pasteOur').value.trim();
+    var msg = [];
+    if(oppTxt){
+      var r = parseRoster(oppTxt);
+      if(r.players.length < 20){ msg.push('<b class="warn">Opponent parse found only '+r.players.length+
+        ' players — check the paste and try again. Nothing was changed.</b>'); }
+      else {
+        var abbr = el('oppAbbr').value.trim().toUpperCase() || D.game.oppTeam;
+        delete D.rosters[D.game.oppTeam];
+        Object.keys(D.overrides).forEach(function(k){ /* opponent overrides don't carry */ });
+        D.game.oppTeam = abbr;
+        D.game.oppName = el('oppName').value.trim() || abbr;
+        D.rosters[abbr] = r.players;
+        if(!D.watch[abbr]) D.watch[abbr] = [];
+        Object.keys(D.watch).forEach(function(k){
+          if(k!==D.game.ourTeam && k!==abbr) delete D.watch[k]; });
+        D.coaches.forEach(function(c){ if(c.tm!==D.game.ourTeam) c.tm = abbr; });
+        msg.push('Opponent roster: <b>'+r.players.length+'</b> players loaded as <b>'+abbr+'</b>.'+
+          (r.skipped.length?' Skipped '+r.skipped.length+' line(s).':''));
+      }
+    }
+    if(ourTxt){
+      var r2 = parseRoster(ourTxt);
+      if(r2.players.length < 20){ msg.push('<b class="warn">Our-team parse found only '+r2.players.length+
+        ' players — nothing was changed.</b>'); }
+      else {
+        D.rosters[D.game.ourTeam] = r2.players;
+        msg.push('Our roster: <b>'+r2.players.length+'</b> players reloaded.'+
+          (r2.skipped.length?' Skipped '+r2.skipped.length+' line(s).':''));
+      }
+    }
+    ['gTitle','gWeek','gDate','gVenue','gCast'].forEach(function(id){
+      var v = el(id).value.trim(); if(!v) return;
+      D.game[{gTitle:'title',gWeek:'week',gDate:'date',gVenue:'venue',gCast:'broadcast'}[id]] = v;
+    });
+    if(oppTxt) D.editorialStale = true;
+    renderAll();
+    el('setupmsg').innerHTML = msg.join('<br>') || 'Nothing to load — paste a roster first.';
+  });
+
+  el('btnSave').addEventListener('click', function(){
+    var payload = JSON.stringify(D);
+    el('sheetdata').textContent = payload;
+    // Re-sign, or the saved copy fails its own integrity check when reopened.
+    el('sheetdata').setAttribute('data-sig', fnv1a(payload));
+    var doc = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    var name = (D.game.ourTeam+'-v-'+D.game.oppTeam+'-font-sheet').replace(/[^A-Za-z0-9-]/g,'')+'.html';
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([doc],{type:'text/html'}));
+    a.download=name; a.click();
+    el('setupmsg').innerHTML = 'Saved <b>'+esc(name)+'</b> — everything on the page, including your typed codes, is baked into that file.';
+  });
+
+  el('btnExport').addEventListener('click', function(){
+    var lines=[];
+    Object.keys(D.rosters).forEach(function(team){
+      lines.push('=== '+team+' ===');
+      D.rosters[team].slice().sort(function(a,b){return (+a.n)-(+b.n);}).forEach(function(p){
+        var c=codeOf(team,p.nm), pfx=pre(team);
+        lines.push('#'+p.n+' '+p.nm+' ('+p.p+') = '+(c.base||'TBD')+
+          (c.base?'   ['+D.prefixes.map(function(x){return pfx+x[0]+c.base;}).join(' / ')+']':'')+
+          (c.flag==='auto'?'   << auto-assigned, confirm':''));
+      });
+      lines.push('');
+    });
+    lines.push('=== COACHES ===');
+    D.coaches.filter(function(c){return c.t;}).forEach(function(c){
+      lines.push(c.t+'  '+c.tm+'  '+c.n.toUpperCase()+' | '+c.r.toUpperCase());
+    });
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/plain'}));
+    a.download='call-codes.txt'; a.click();
+  });
+
+  el('btnToggle').addEventListener('click', function(){
+    var p=el('setupbody');
+    p.style.display = p.style.display==='none' ? '' : 'none';
+    el('btnToggle').textContent = p.style.display==='none' ? 'Open setup' : 'Hide setup';
+  });
+  var fresh = !(D.rosters[D.game.oppTeam] || []).length;
+  el('setupbody').style.display = fresh ? '' : 'none';
+  el('btnToggle').textContent = fresh ? 'Hide setup' : 'Open setup';
+}
+
+/* ---------- master render ---------- */
+function renderAll(){
+  assignCodes();
+  buildPlayerIndex();
+  renderHeader(); renderStorylines(); renderPrefixKey(); renderWatch();
+  renderDupes(); renderZero(); renderNear(); renderClusters(); renderTraps(); renderUnavail(); renderIndex(); renderCoaches();
+  el('stalebanner').style.display = D.editorialStale ? '' : 'none';
+  var nj = el('nojs'); if(nj) nj.style.display = 'none';   // JS is clearly running
+  wireCells();
+}
+
+renderAll();
+wireLookup();
+wireSetup();
+})();
+</script>
+
+
+</body></html>

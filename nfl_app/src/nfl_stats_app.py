@@ -3,6 +3,7 @@ from __future__ import annotations
 from difflib import get_close_matches
 from datetime import datetime
 from pathlib import Path
+import os
 import threading
 import tkinter as tk
 from tkinter import messagebox, ttk
@@ -20,6 +21,7 @@ from build_career_database import (
     build_team_history, build_totals, export_database, load_stats,
     load_team_history_stats,
 )
+from font_sheet import write_font_sheet
 from call_sheet import (
     duplicate_keys, duplicate_values, load_call_sheet, normalize_call_up,
     save_call_sheet,
@@ -163,6 +165,7 @@ class NFLStatsApp(tk.Tk):
         header.pack(fill="x")
         ttk.Label(header, text="NFL Stats Lookup", style="Title.TLabel").pack(side="left")
         ttk.Button(header, text="Generate Pre-Game Packet", command=self.generate_pregame_packet).pack(side="right")
+        ttk.Button(header, text="Build Font Sheet", command=self.build_font_sheet).pack(side="right", padx=(0, 8))
         self.update_button = ttk.Button(header, text="Update All Data", command=self.update_all_data)
         self.update_button.pack(side="right", padx=(0, 8))
 
@@ -1546,6 +1549,60 @@ class NFLStatsApp(tk.Tk):
         text = self.suggestion_text.get("1.0", tk.END).strip()
         if text:
             self._copy_to_clipboard(text, "Copied graphic suggestions")
+
+    def build_font_sheet(self) -> None:
+        """Write the GFX font sheet for the selected matchup and open it.
+
+        The sheet's own engine computes every call code from the roster data, so
+        this only supplies the rosters and the confirmed overrides.
+        """
+        if self.roster.empty:
+            messagebox.showwarning(APP_TITLE, "Load or update the roster data first.")
+            return
+        sides = self._game_sides()
+        home, away = sides["home"], sides["away"]
+        if not home or not away:
+            messagebox.showwarning(APP_TITLE, "Select two game teams first.")
+            return
+        stamp = (
+            datetime.fromtimestamp(ROSTER_FILE.stat().st_mtime)
+            if ROSTER_FILE.exists() else None
+        )
+        try:
+            path, report = write_font_sheet(self.roster, home, away, TEAM_NAMES, stamp)
+        except Exception as error:
+            self.status_text.set(f"Font sheet failed — {error}")
+            messagebox.showerror(APP_TITLE, f"Could not build the font sheet:\n\n{error}")
+            return
+
+        notes = [
+            f"{report['our_team']} {report['our_count']} players, "
+            f"{report['opponent']} {report['opp_count']} players.",
+            f"{len(report['overrides_applied'])} confirmed override(s) applied.",
+        ]
+        # Anything that could not be applied is said out loud rather than dropped:
+        # a missing override silently becomes an amber guess on air.
+        if report["overrides_unmatched"]:
+            notes.append(
+                "COULD NOT MATCH these confirmed overrides to anyone on the roster — "
+                "check the spelling in config/tb_overrides.json:\n  "
+                + "\n  ".join(report["overrides_unmatched"])
+            )
+        if report["skipped_no_jersey"]:
+            notes.append(
+                f"{len(report['skipped_no_jersey'])} player(s) had no jersey number and "
+                "were left off the sheet:\n  " + "\n  ".join(report["skipped_no_jersey"])
+            )
+        notes.append(
+            "Storylines, players-to-have-ready and the opponent coach block are NOT "
+            "rebuilt — type those in. Confirm every amber code with the op."
+        )
+        self.status_text.set(f"Font sheet built — {path.name}")
+        messagebox.showinfo(APP_TITLE, f"Font sheet written:\n\n{path}\n\n" + "\n\n".join(notes))
+        try:
+            os.startfile(path)
+        except OSError as error:
+            self.status_text.set(f"Font sheet written, but it could not be opened — {error}")
 
     def generate_pregame_packet(self) -> None:
         teams = self.get_game_team_codes()

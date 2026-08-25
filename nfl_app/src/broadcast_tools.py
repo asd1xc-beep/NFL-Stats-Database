@@ -11,6 +11,7 @@ TEAM_CODE_NORMALIZATION = {
     "LA": "LAR",
     "JAC": "JAX",
     "ARZ": "ARI",
+    "AZ": "ARI",   # nflverse load_rosters() uses AZ, not ARI or ARZ
     "STL": "LAR",
     "OAK": "LV",
     "SD": "LAC",

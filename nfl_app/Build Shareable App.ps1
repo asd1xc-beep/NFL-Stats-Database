@@ -22,6 +22,8 @@ Write-Host "Building the Windows application..."
     --collect-all pandas `
     --collect-all requests `
     --collect-all certifi `
+    --add-data "assets;assets" `
+    --add-data "config;config" `
     --hidden-import openpyxl `
     --hidden-import xlsxwriter `
     src\nfl_stats_app.py

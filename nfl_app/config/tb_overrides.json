@@ -1,0 +1,10 @@
+{
+  "_note": "Confirmed Bucs base call codes that carry week to week. Names are matched canonically (suffixes, accents and punctuation ignored), then re-keyed to whatever the roster calls the player, so spelling drift like 'Dean Patterson IV' vs 'Dean Patterson' cannot silently drop an override.",
+  "team": "TB",
+  "overrides": {
+    "Yaya Diaby": "12",
+    "SirVocea Dennis": "08",
+    "Dean Patterson IV": "20",
+    "Scott Daly": "71"
+  }
+}
